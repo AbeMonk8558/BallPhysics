@@ -1,0 +1,1 @@
+gcc -g -o ../bin/ball_physics.exe *.c -I../include -lraylib -lm

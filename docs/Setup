@@ -1,0 +1,13 @@
+1. Download MSYS2.
+
+2. Open a UCRT64 (Universal C Runtime) shell.
+
+3. Download the necessary GCC tools. You can download just the GCC compiler, or you can download
+   an entire, prepackaged development toolchain. Both commands are shown, respectively.
+    • pacman -S mingw-w64-ucrt-x86_64-gcc
+    • pacman -S --needed mingw-w64-ucrt-x86_64-toolchain
+
+4. Download the Raylib package for UCRT64.
+    • pacman -S mingw-w64-ucrt-x86_64-raylib
+
+5. Compile the program using build.sh; you can run it from the src directory.
