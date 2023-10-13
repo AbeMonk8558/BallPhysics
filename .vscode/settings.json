@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "ball_physics.h": "c"
+        "ball_physics.h": "c",
+        "raylib.h": "c",
+        "stdio.h": "c",
+        "stat.h": "c",
+        "ballphysics.h": "c"
     }
 }

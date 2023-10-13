@@ -1,10 +1,16 @@
 #include <raylib.h>
-#include "ball_physics.h"
+#include "ballPhysics.h"
 
-void handleSpeedMod(double* speedMod)
+void handleSpeedMod(float* speedMod, KeyboardKey key)
 {
-    if (GetKeyPressed() == KEY_UP)
+    if (key == KEY_UP)
         *speedMod += 1.0;
-    else if (GetKeyPressed() == KEY_DOWN && *speedMod >= 1.0)
+    else if (key == KEY_DOWN && *speedMod >= 2.0)
         *speedMod -= 1.0;
+}
+
+void handlePause(bool* paused, KeyboardKey key)
+{
+    if (key == KEY_P)
+        *paused = !(*paused);
 }

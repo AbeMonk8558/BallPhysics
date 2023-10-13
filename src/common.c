@@ -1,6 +1,6 @@
 #include <raylib.h>
 #include <math.h>
-#include "ball_physics.h"
+#include "ballPhysics.h"
 
 // TODO: Add full color scope.
 Color randomColor(RandColorScope scope)

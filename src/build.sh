@@ -1,1 +1,1 @@
-gcc -g -o ../bin/ball_physics.exe *.c -I../include -lraylib -lm
+gcc -g -o ../bin/ballPhysics.exe *.c -I../include -lraylib -lm
