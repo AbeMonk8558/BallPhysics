@@ -4,6 +4,8 @@
         "raylib.h": "c",
         "stdio.h": "c",
         "stat.h": "c",
-        "ballphysics.h": "c"
+        "ballphysics.h": "c",
+        "stdbool.h": "c",
+        "raygui.h": "c"
     }
 }

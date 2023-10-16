@@ -1,6 +1,7 @@
 #pragma once
 
 #include <raylib.h>
+#include <stdbool.h>
 
 /*
 IMPORTANT NOTE: All mathematical operations are performed as if they were taking place on a standard
@@ -12,9 +13,6 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 #define DEF_TARGET_FPS 30
 #define LOG_LEVEL LOG_FATAL
 
-#define VEC_DIST_V(vec) sqrt((vec).x * (vec).x + (vec).y * (vec).y)
-#define VEC_DIST(x, y) sqrt((x) * (x) + (y) * (y))
-
 typedef Vector2 Vec2Pair[2];
 
 typedef enum RandColorScope
@@ -22,6 +20,19 @@ typedef enum RandColorScope
     ALL = 0,
     RAINBOW = 1
 } RandColorScope;
+
+typedef enum ObjectType
+{
+    Circle = 0,
+    Rect = 1
+} ObjectType;
+
+typedef struct Object
+{
+    ObjectType type;
+    Vector2 pos;
+    Vector2 vel; // Pixels/sec
+} Object;
 
 typedef struct BallMotion
 {
@@ -42,7 +53,14 @@ void genLocations(BallMotion* ballMotions, int nBalls, int radius);
 //user.c
 void handleSpeedMod(float* speedMod, KeyboardKey key);
 void handlePause(bool* paused, KeyboardKey key);
+void handleLineCreation(Vector2 mousePos);
 
 //collision.c
 bool handleWallCollision(BallMotion* ballMotion, int radius, Vec2Pair dps);
 bool handleBallCollision(BallMotion* ballMotions, int nBalls, int i, int radius, Vec2Pair dps);
+
+//math.c
+Vector2 vecAdd(Vector2 left, Vector2 right);
+Vector2 vecSub(Vector2 left, Vector2 right);
+Vector2 vecScale(Vector2 vec, float scalar);
+float vecDist(Vector2 vec);

@@ -3,9 +3,6 @@
 #include <stdbool.h>
 #include "ballPhysics.h"
 
-#include <stdio.h>
-#include <math.h>
-
 static BallMotion* ballMotions;
 static int targetFPS, nBalls, radius;
 static float speedMod;
@@ -13,16 +10,8 @@ static float speedMod;
 void simBallMotion(Vec2Pair* dps);
 Vector2 getRenderPos(Vector2 pos);
 
-Vector2 calcBounceVec(Vector2 d, float surfaceAngle);
 int main(int argc, char** argv)
 {
-    // Vector2 vec1 = { 5, 1 };
-    // printf("<%f, %f>\n", vec1.x, vec1.y);
-    // Vector2 vec2 = calcBounceVec(vec1, 50 * (PI/180));
-    // printf("<%f, %f>\n", vec2.x, vec2.y);
-    // printf("%f\n", atan2f(1, 0));
-    // return 0;
-
     nBalls = 2;
     speedMod = 1.0f;
     radius = 10;
@@ -32,11 +21,12 @@ int main(int argc, char** argv)
     bool paused = false;
     Color backgroundColor = BLACK;
     KeyboardKey key;
+    Vector2 mousePos;
 
     // d-primes -- the trajectory modifications after each frame.
     // When the ball bounces, there will be a normal trajectory and a special 
     // bounce trajectory for that frame: [base traj, special-case traj].
-    Vec2Pair* dps;
+    Vec2Pair* dps = (Vec2Pair*)malloc(nBalls * sizeof(Vec2Pair));
     int i;
 
     SetTraceLogLevel(LOG_LEVEL);
@@ -48,16 +38,17 @@ int main(int argc, char** argv)
     genTrajectories(ballMotions, nBalls);
     genLocations(ballMotions, nBalls, radius);
 
-    dps = (Vec2Pair*)malloc(nBalls * sizeof(Vec2Pair));
     for (i = 0; i < nBalls; i++)
         dps[i][0] = dps[i][1] = ballMotions[i].traj;
 
     while (!WindowShouldClose())
     {
         key = GetKeyPressed();
+        mousePos = GetMousePosition();
 
         handlePause(&paused, key);
         handleSpeedMod(&speedMod, key);
+        handleLineCreation(mousePos);
 
         BeginDrawing();
 
@@ -74,6 +65,11 @@ int main(int argc, char** argv)
     free(ballMotions);
 
     return EXIT_SUCCESS;
+}
+
+void renderObjects(void)
+{
+    
 }
 
 void simBallMotion(Vec2Pair* dps)
@@ -95,8 +91,7 @@ void simBallMotion(Vec2Pair* dps)
     for (i = 0; i < nBalls; i++)
     {   
         d = getFrameTraj(dps[i][1]);
-        ballMotions[i].pos.x += d.x;
-        ballMotions[i].pos.y += d.y;
+        ballMotions[i].pos = vecAdd(ballMotions[i].pos, d);
 
         DrawCircleV(getRenderPos(ballMotions[i].pos), radius, RED);
         ballMotions[i].traj = dps[i][0];
@@ -114,5 +109,5 @@ Vector2 getRenderPos(Vector2 pos)
 Vector2 getFrameTraj(Vector2 traj)
 {
     // Gets the trajectory modified for a single frame
-    return (Vector2){ traj.x / targetFPS * speedMod, traj.y / targetFPS * speedMod };
+    return vecScale(traj, speedMod / targetFPS);
 }
