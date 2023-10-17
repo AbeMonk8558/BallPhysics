@@ -29,10 +29,10 @@ void handleLineCreation(Vector2 mousePos)
     if (IsMouseButtonPressed(lineBtn))
     {
         currLnStart = mousePos;
-        ImageDrawLineEx(mousePos, mousePos, 2.0f, WHITE);
+        DrawLineV(mousePos, mousePos, WHITE);
     }
     else if (IsMouseButtonDown(lineBtn))
     {
-        ImageDrawLineEx(currLnStart, mousePos, 2.0f, WHITE);
+        DrawLineV(currLnStart, mousePos, WHITE);
     }
 }

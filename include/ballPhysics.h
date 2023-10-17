@@ -39,8 +39,8 @@ typedef struct Object
 typedef struct ObjectList
 {
     Object* data;
-    size_t size;
-    size_t capacity;
+    int size;
+    int capacity;
 } ObjectList;
 
 typedef struct CircleObject
@@ -51,7 +51,7 @@ typedef struct CircleObject
 typedef struct RectObject
 {
     Vector2 size;
-    float rotation;
+    float rotation; // Describes rotation around center of mass
 } RectObject;
 
 // ***************************************************************
@@ -74,7 +74,7 @@ void handlePause(bool* paused, KeyboardKey key);
 void handleLineCreation(Vector2 mousePos);
 
 //collision.c
-bool handleCollisions(ObjectList objects, size_t idx);
+bool handleCollisions(ObjectList objects, int idx);
 
 //math.c
 Vector2 vecAdd(Vector2 left, Vector2 right);

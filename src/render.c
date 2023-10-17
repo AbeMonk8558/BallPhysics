@@ -4,7 +4,6 @@
 #include "ballPhysics.h"
 
 static ObjectList objects;
-static Vector2* dps;
 static int targetFPS, nBalls, radius;
 static float speedMod;
 
@@ -16,6 +15,23 @@ void addObject(Object obj);
 
 int main(int argc, char** argv)
 {
+    InitWindow(500, 500, "Test");
+    BeginDrawing();
+    DrawRectanglePro( // <--- Rotates around top-left corner
+        (Rectangle){ .x = 250, .y = 250, .width = 50, .height = 100},
+        vecScale((Vector2){ 0, 0 }, 0.5f),
+        45.0f,
+        WHITE);
+    DrawRectanglePro(
+        (Rectangle){ .x = 250, .y = 250, .width = 50, .height = 100},
+        vecScale((Vector2){ 0, 0 }, 0.5f),
+        0.0f,
+        RED);
+    EndDrawing();
+    WaitTime(5);
+    CloseWindow();
+    return 0;
+
     nBalls = 2;
     speedMod = 1.0f;
     radius = 10;
@@ -69,8 +85,8 @@ int main(int argc, char** argv)
         EndDrawing();
     }
 
+    CloseWindow();
     freeObjects();
-    free(dps);
 
     return EXIT_SUCCESS;
 }
@@ -137,7 +153,11 @@ void renderObjects(void)
         else if (obj->type == OBJ_RECT)
         {
             RectObject* rect = (RectObject*)obj->obj;
-            DrawRectangleV(getRenderPos(obj->pos), rect->size, WHITE);
+            DrawRectanglePro(
+                (Rectangle){.x = obj->pos.x, .y = obj->pos.y, .width = rect->size.x, .height = rect->size.y}, 
+                vecScale((Vector2){obj->pos.x * 2 + rect->size.x, obj->pos.y * 2 + rect->size.y}, 0.5f),
+                rect->rotation,
+                WHITE);
         }
 
         if (!vecComp(obj->vel, obj->baseVel))
