@@ -13,18 +13,18 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 #define DEF_TARGET_FPS 30
 #define LOG_LEVEL LOG_FATAL
 
-typedef Vector2 Vec2Pair[2];
-
 typedef enum RandColorScope
 {
     ALL = 0,
     RAINBOW = 1
 } RandColorScope;
 
+// *************** SEMI-GENERIC COLLISION SYSTEM *****************
+
 typedef enum ObjectType
 {
-    Circle = 0,
-    Rect = 1
+    OBJ_CIRCLE = 0,
+    OBJ_RECT = 1
 } ObjectType;
 
 typedef struct Object
@@ -32,23 +32,40 @@ typedef struct Object
     ObjectType type;
     Vector2 pos;
     Vector2 vel; // Pixels/sec
+    void* obj;
 } Object;
 
-typedef struct BallMotion
+typedef struct ObjectList
 {
-    Vector2 pos;
-    Vector2 traj; // Velocity in pixels/sec
-} BallMotion;
+    Object* data;
+    size_t size;
+    size_t capacity;
+} ObjectList;
+
+typedef struct CircleObject
+{
+    float radius;
+} CircleObject;
+
+typedef struct RectObject
+{
+    Vector2 size;
+    float rotation;
+} RectObject;
+
+// ***************************************************************
 
 //render.c
-Vector2 getFrameTraj(Vector2 traj);
+Vector2 getFrameVel(Vector2 traj);
+void addCircleObject(Vector2 pos, Vector2 vel, float radius);
+void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
 
 //common.c
 Color randomColor(RandColorScope scope);
 
 //generation.c
-void genTrajectories(BallMotion* ballMotions, int nBalls);
-void genLocations(BallMotion* ballMotions, int nBalls, int radius);
+void genTrajectories(ObjectList objects);
+void genLocations(ObjectList objects);
 
 //user.c
 void handleSpeedMod(float* speedMod, KeyboardKey key);

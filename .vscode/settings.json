@@ -6,6 +6,7 @@
         "stat.h": "c",
         "ballphysics.h": "c",
         "stdbool.h": "c",
-        "raygui.h": "c"
+        "raygui.h": "c",
+        "stdlib.h": "c"
     }
 }

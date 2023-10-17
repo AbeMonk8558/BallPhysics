@@ -122,3 +122,5 @@ bool handleBallCollision(BallMotion* ballMotions, int nBalls, int idx, int radiu
 
     return false;
 }
+
+void handleCollisions(Object* objects, int nObjects)
