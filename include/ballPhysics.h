@@ -32,6 +32,7 @@ typedef struct Object
     ObjectType type;
     Vector2 pos;
     Vector2 vel; // Pixels/sec
+    Vector2 baseVel;
     void* obj;
 } Object;
 
@@ -73,11 +74,11 @@ void handlePause(bool* paused, KeyboardKey key);
 void handleLineCreation(Vector2 mousePos);
 
 //collision.c
-bool handleWallCollision(BallMotion* ballMotion, int radius, Vec2Pair dps);
-bool handleBallCollision(BallMotion* ballMotions, int nBalls, int i, int radius, Vec2Pair dps);
+bool handleCollisions(ObjectList objects, size_t idx);
 
 //math.c
 Vector2 vecAdd(Vector2 left, Vector2 right);
 Vector2 vecSub(Vector2 left, Vector2 right);
 Vector2 vecScale(Vector2 vec, float scalar);
 float vecDist(Vector2 vec);
+bool vecComp(Vector2 left, Vector2 right);

@@ -8,7 +8,6 @@ static Vector2* dps;
 static int targetFPS, nBalls, radius;
 static float speedMod;
 
-void simBallMotion(void);
 Vector2 getRenderPos(Vector2 pos);
 
 void renderObjects(void);
@@ -22,6 +21,7 @@ int main(int argc, char** argv)
     radius = 10;
     targetFPS = DEF_TARGET_FPS;
 
+    objects.size = 0;
     objects.capacity = nBalls + 4; // Includes the 4 bounding walls
     objects.data = (Object*)malloc(objects.capacity * sizeof(Object));
 
@@ -29,11 +29,6 @@ int main(int argc, char** argv)
     Color backgroundColor = BLACK;
     KeyboardKey key;
     Vector2 mousePos;
-
-    // d-primes -- the trajectory modifications after each frame.
-    // When the ball bounces, there will be a normal trajectory and a special 
-    // bounce trajectory for that frame: [base traj, special-case traj].
-    Vector2* dps = (Vector2*)malloc(nBalls * sizeof(Vector2));
     int i;
 
     SetTraceLogLevel(LOG_LEVEL);
@@ -42,13 +37,17 @@ int main(int argc, char** argv)
     SetExitKey(KEY_ESCAPE);
     SetTargetFPS(targetFPS);
 
+    for (i = 0; i < nBalls; i++)
+        addCircleObject((Vector2){0}, (Vector2){0}, 10.0f);
+
     genTrajectories(objects);
     genLocations(objects);
 
-    for (i = 0; i < nBalls; i++)
-    {
-        
-    }
+    // Adding the 4 edge walls
+    addRectObject((Vector2){0, 0}, (Vector2){0, 0}, (Vector2){0, GetScreenHeight()}, 0.0f);
+    addRectObject((Vector2){0, 0}, (Vector2){0, 0}, (Vector2){GetScreenWidth(), 0}, 0.0f);
+    addRectObject((Vector2){GetScreenWidth(), 0}, (Vector2){0, 0}, (Vector2){0, GetScreenHeight()}, 0.0f);
+    addRectObject((Vector2){0, GetScreenHeight()}, (Vector2){0, 0}, (Vector2){GetScreenWidth(), 0}, 0.0f);
 
     while (!WindowShouldClose())
     {
@@ -61,12 +60,10 @@ int main(int argc, char** argv)
 
         BeginDrawing();
 
-        if (!paused)
-        {
-            simBallMotion();
-        }
-
         ClearBackground(backgroundColor);
+
+        for (i = 0; i < objects.size; i++)
+            handleCollisions(objects, i);
         renderObjects();
 
         EndDrawing();
@@ -135,43 +132,20 @@ void renderObjects(void)
         if (obj->type == OBJ_CIRCLE)
         {
             CircleObject* circle = (CircleObject*)obj->obj;
-            DrawCircleV(obj->pos, circle->radius, RED);
+            DrawCircleV(getRenderPos(obj->pos), circle->radius, RED);
         }
         else if (obj->type == OBJ_RECT)
         {
             RectObject* rect = (RectObject*)obj->obj;
-            DrawRectangleV(obj->pos, rect->size, WHITE);
+            DrawRectangleV(getRenderPos(obj->pos), rect->size, WHITE);
         }
+
+        if (!vecComp(obj->vel, obj->baseVel))
+            obj->vel = obj->baseVel;
     }
 }
 
 // ******************************************************
-
-void simBallMotion(void)
-{
-    int i;
-    Vector2 d; // d = delta
-
-    for (i = 0; i < nBalls; i++)
-    {
-        if (!(handleWallCollision(&ballMotions[i], radius, dps[i]) ||
-            handleBallCollision(ballMotions, nBalls, i, radius, dps[i])))
-        {
-            dps[i][1] = dps[i][0]; // If there's no special trajectory for a bounce, than mod it to the base one.
-        }
-    }
-
-    // Trajectories can only be modified after all calculations for the frame have been run --
-    // balls depend on each other's trajectories to calculate bounce vectors.
-    for (i = 0; i < nBalls; i++)
-    {   
-        d = getFrameTraj(dps[i][1]);
-        ballMotions[i].pos = vecAdd(ballMotions[i].pos, d);
-
-        DrawCircleV(getRenderPos(ballMotions[i].pos), radius, RED);
-        ballMotions[i].traj = dps[i][0];
-    }
-}
 
 Vector2 getRenderPos(Vector2 pos)
 {

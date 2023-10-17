@@ -21,3 +21,8 @@ float vecDist(Vector2 vec)
 {
     return sqrtf(vec.x * vec.x + vec.y * vec.y);
 }
+
+bool vecComp(Vector2 left, Vector2 right)
+{
+    return (left.x == right.x) && (left.y == right.y);
+}

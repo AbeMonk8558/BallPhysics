@@ -3,17 +3,6 @@
 #include <memory.h>
 #include "ballPhysics.h"
 
-void genRadii(ObjectList objects)
-{
-    int i;
-
-    for (i = 0; i < objects.size - 4; i++)
-    {
-        CircleObject circle = { 10 };
-        memcpy(objects.data[i].obj, &circle, sizeof(CircleObject));
-    }
-}
-
 void genTrajectories(ObjectList objects)
 {
     int i;
