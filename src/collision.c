@@ -154,10 +154,10 @@ bool handleCollisions(ObjectList objects, int idx)
     }
 }
 
-Collision circleAndRectCollision(Object* circleObj, Object* rectObj)
+Collision circleAndRectCollision(Object* cObj, Object* rObj)
 {
-    CircleObject* circle = (CircleObject*)circleObj->obj;
-    RectObject* rect = (RectObject*)rectObj->obj;
+    CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
+    RectObject* rObj_R = (RectObject*)rObj->typeObj;
 
 
 }

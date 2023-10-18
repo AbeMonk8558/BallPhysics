@@ -12,6 +12,8 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 
 #define DEF_TARGET_FPS 30
 #define LOG_LEVEL LOG_FATAL
+#define EPSILON // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+// HANDLE FLOAT COMPARISONS CORRECTLY ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 typedef enum RandColorScope
 {
@@ -30,10 +32,10 @@ typedef enum ObjectType
 typedef struct Object
 {
     ObjectType type;
-    Vector2 pos;
+    Vector2 pos; // <-- Bottom-right corner for rectangles
     Vector2 vel; // Pixels/sec
     Vector2 baseVel;
-    void* obj;
+    void* typeObj;
 } Object;
 
 typedef struct ObjectList

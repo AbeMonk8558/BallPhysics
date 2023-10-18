@@ -1,6 +1,13 @@
 #include <raylib.h>
+#include <raymath.h>
+#include <stdbool.h>
 #include <math.h>
 #include "ballPhysics.h" 
+
+bool floatComp(float left, float right)
+{
+    //TODO
+}
 
 Vector2 vecAdd(Vector2 left, Vector2 right)
 {
