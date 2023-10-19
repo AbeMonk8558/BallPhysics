@@ -4,7 +4,10 @@
 #include <math.h>
 #include "ballPhysics.h"
 
+#include <stdio.h>
+
 static ObjectList objects; 
+static Collision* collisions;
 static int targetFPS, nBalls, radius;
 static float speedMod;
 
@@ -22,10 +25,6 @@ int main(int argc, char** argv)
     radius = 10;
     targetFPS = DEF_TARGET_FPS;
 
-    objects.size = 0;
-    objects.capacity = nBalls + 4; // Includes the 4 bounding walls
-    objects.data = (Object*)malloc(objects.capacity * sizeof(Object));
-
     bool paused = false;
     Color backgroundColor = BLACK;
     KeyboardKey key;
@@ -38,17 +37,27 @@ int main(int argc, char** argv)
     SetExitKey(KEY_ESCAPE);
     SetTargetFPS(targetFPS);
 
+    // ********************** OBJECT SETUP **************************
+    objects.size = 0;
+    objects.capacity = nBalls + 4; // Includes the 4 bounding walls
+    objects.data = (Object*)malloc(objects.capacity * sizeof(Object));
+    
+    collisions = (Collision*)malloc(objects.capacity * sizeof(Collision));
+    for (i = 0; i < objects.capacity; i++) // <-- May not be necessary
+        collisions[i] = NO_CLSN;
+
     for (i = 0; i < nBalls; i++)
-        addCircleObject((Vector2){ 0 }, (Vector2){ 0 }, 10.0f);
+        addCircleObject(VEC2_ZERO, VEC2_ZERO, 10.0f);
 
     genTrajectories(objects);
     genLocations(objects);
 
     // Adding the 4 edge walls
-    addRectObject((Vector2){ 0 }, (Vector2){ 0 }, (Vector2){ 0, GetScreenHeight() }, 0.0f);
-    addRectObject((Vector2){ 0 }, (Vector2){ 0 }, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
-    addRectObject((Vector2){ GetScreenWidth(), 0 }, (Vector2){ 0 }, (Vector2){ 0, GetScreenHeight() }, 0.0f);
-    addRectObject((Vector2){ 0, GetScreenHeight() }, (Vector2){ 0 }, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
+    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ 0, GetScreenHeight() }, 0.0f);
+    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
+    addRectObject((Vector2){ GetScreenWidth(), 0 }, VEC2_ZERO, (Vector2){ 0, GetScreenHeight() }, 0.0f);
+    addRectObject((Vector2){ 0, GetScreenHeight() }, VEC2_ZERO, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
+    // ******************************************************************
 
     while (!WindowShouldClose())
     {
@@ -60,7 +69,7 @@ int main(int argc, char** argv)
         handleLineCreation(mousePos);
 
         for (i = 0; i < objects.size; i++)
-            handleCollisions(objects, i);
+            collisions[i] = findCollisions(objects, i);
 
         BeginDrawing();
 
@@ -85,7 +94,7 @@ void addCircleObject(Vector2 pos, Vector2 vel, float radius)
     handleObjectsResize();
     obj = &objects.data[objects.size++];
 
-    *obj = (Object){ .type = OBJ_CIRCLE, .pos = pos, .vel = vel, .baseVel = vel, .typeObj = malloc(sizeof(CircleObject)) };
+    *obj = (Object){ .type = OBJ_CIRCLE, .pos = pos, .vel = vel, .typeObj = malloc(sizeof(CircleObject)) };
     *((CircleObject*)obj->typeObj) = (CircleObject){ .radius = radius };
 }
 
@@ -96,7 +105,7 @@ void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation)
     handleObjectsResize();
     obj = &objects.data[objects.size++];
 
-    *obj = (Object){ .type = OBJ_RECT, .pos = pos, .vel = vel, .baseVel = vel, .typeObj = malloc(sizeof(RectObject)) };
+    *obj = (Object){ .type = OBJ_RECT, .pos = pos, .vel = vel, .typeObj = malloc(sizeof(RectObject)) };
     *((RectObject*)obj->typeObj) = (RectObject){ .size = size, .rotation = rotation };
 }
 
@@ -106,6 +115,7 @@ void handleObjectsResize(void)
 
     objects.capacity *= 2;
     objects.data = (Object*)realloc(objects.data, objects.capacity * sizeof(Object));
+    collisions = realloc(collisions, objects.capacity * sizeof(Collision));
 }
 
 void freeObjects(void)
@@ -127,12 +137,24 @@ void renderObjects(void)
     for (i = 0; i < objects.size; i++)
     {
         obj = &objects.data[i];
-        d = getFrameVel(objects.data[i].vel);
+
+        if (isCollision(collisions[i]))
+        {
+            Vector2 bounceVec = calcBounceVec(obj->vel, collisions[i].tanAngle);
+            d = getFrameVel(calcCollisionVec(objects.data[i].vel, bounceVec, collisions[i].prop));
+            obj->vel = bounceVec;
+        }
+        else
+        {
+            d = getFrameVel(objects.data[i].vel);
+        }
 
         obj->pos = vecAdd(obj->pos, d);
 
         if (obj->type == OBJ_CIRCLE)
         {
+            //printf("Rendering circle at (%f, %f).\n", obj->pos.x, obj->pos.y);
+
             CircleObject* obj_C = (CircleObject*)obj->typeObj;
             DrawCircleV(getRenderPos(obj->pos), obj_C->radius, RED);
         }
@@ -156,13 +178,10 @@ void renderObjects(void)
 
             DrawRectanglePro(
                 (Rectangle){ rPos.x, rPos.y, w, h }, 
-                (Vector2){ 0, 0 },
+                VEC2_ZERO,
                 getRenderRotation(n),
                 WHITE);
         }
-
-        if (!vecComp(obj->vel, obj->baseVel))
-            obj->vel = obj->baseVel;
     }
 }
 

@@ -4,7 +4,7 @@
             "name": "Debug With MSYS2 gdb",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/ball_physics.exe",
+            "program": "${workspaceFolder}/bin/ballPhysics.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

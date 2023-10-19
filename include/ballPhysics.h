@@ -8,16 +8,20 @@ IMPORTANT NOTE: All mathematical operations are performed as if they were taking
 cartesian coordinate system (i-hat: <1, 0> and j-hat: <0, 1>). The coordinates are transformed
 into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 */
-//#define PRINT_BOUNCES
 
+// ************ SETUP ******************
 #define DEF_TARGET_FPS 30
 #define LOG_LEVEL LOG_FATAL
 #define EPSILON // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 // HANDLE FLOAT COMPARISONS CORRECTLY ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// ************************************
 
-// FOR TESTING **************
+// ********** FOR TESTING **************
 #define USE_GEN 0
-// **************************
+// *************************************
+
+#define NO_CLSN ((Collision){ -1.0f, -1.0f })
+#define VEC2_ZERO ((Vector2){ 0.0f, 0.0f })
 
 typedef enum RandColorScope
 {
@@ -38,7 +42,6 @@ typedef struct Object
     ObjectType type;
     Vector2 pos; // <-- Bottom-right corner for rectangles
     Vector2 vel; // Pixels/sec
-    Vector2 baseVel;
     void* typeObj;
 } Object;
 
@@ -57,10 +60,16 @@ typedef struct CircleObject
 typedef struct RectObject
 {
     Vector2 size;
-    float rotation; // Describes rotation around center of mass
+    float rotation; // Rotation around centroid
 } RectObject;
 
 // ***************************************************************
+
+typedef struct Collision
+{
+    float prop;
+    float tanAngle;
+} Collision;
 
 //render.c
 Vector2 getFrameVel(Vector2 vel);
@@ -80,7 +89,10 @@ void handlePause(bool* paused, KeyboardKey key);
 void handleLineCreation(Vector2 mousePos);
 
 //collision.c
-bool handleCollisions(ObjectList objects, int idx);
+Collision findCollisions(ObjectList objects, int idx);
+Vector2 calcBounceVec(Vector2 d, float surfaceAngle);
+Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp);
+bool isCollision(Collision clsn);
 
 //math.c
 Vector2 vecAdd(Vector2 left, Vector2 right);
