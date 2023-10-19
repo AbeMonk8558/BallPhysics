@@ -1,5 +1,4 @@
 #include <raylib.h>
-#include <raymath.h>
 #include <stdbool.h>
 #include <math.h>
 #include "ballPhysics.h" 

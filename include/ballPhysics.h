@@ -15,13 +15,17 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 #define EPSILON // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 // HANDLE FLOAT COMPARISONS CORRECTLY ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+// FOR TESTING **************
+#define USE_GEN 0
+// **************************
+
 typedef enum RandColorScope
 {
     ALL = 0,
     RAINBOW = 1
 } RandColorScope;
 
-// *************** SEMI-GENERIC COLLISION SYSTEM *****************
+// *************** SEMI-GENERIC OBJECT SYSTEM *****************
 
 typedef enum ObjectType
 {
@@ -59,7 +63,7 @@ typedef struct RectObject
 // ***************************************************************
 
 //render.c
-Vector2 getFrameVel(Vector2 traj);
+Vector2 getFrameVel(Vector2 vel);
 void addCircleObject(Vector2 pos, Vector2 vel, float radius);
 void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
 

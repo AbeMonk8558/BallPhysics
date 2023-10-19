@@ -16,10 +16,10 @@ Vector2 calcBounceVec(Vector2 d, float surfaceAngle)
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
 // the trajectories both before and after the bounce and the proportion of the frame time
 // after which the collision occurs.
-// Vector2 calcCollisionVec(Vector2 traj1, Vector2 traj2, float collisionProp)
-// {
-//     return vecAdd(vecScale(traj1, collisionProp), vecScale(traj2, (1.0f - collisionProp)));
-// }
+Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp)
+{
+    return vecAdd(vecScale(vel1, collisionProp), vecScale(vel2, (1.0f - collisionProp)));
+}
 
 // bool handleWallCollision(BallMotion* ballMotion, int radius, Vec2Pair dps)
 // {   
@@ -126,12 +126,12 @@ Vector2 calcBounceVec(Vector2 d, float surfaceAngle)
 
 typedef struct Collision
 {
-    Vector2 pos;
+    float prop;
     float tanAngle;
 } Collision;
 
-Collision circleAndRectCollision();
-Collision circleAndCircleCollision();
+Collision circleAndRectCollision(Object* cObj, Object* rObj);
+Collision circleAndCircleCollision(Object* obj1, Object* obj2);
 
 bool handleCollisions(ObjectList objects, int idx)
 {
@@ -151,7 +151,14 @@ bool handleCollisions(ObjectList objects, int idx)
             clsn = circleAndRectCollision(obj2, obj);
         else
             clsn = circleAndCircleCollision(obj, obj2);
+
+        if (clsn.prop < 0.0f) continue;
+
+        obj->baseVel = calcBounceVec(obj->vel, clsn.tanAngle);
+        obj->vel = calcCollisionVec(obj->vel, obj->baseVel, clsn.prop);
     }
+
+    return false;
 }
 
 Collision circleAndRectCollision(Object* cObj, Object* rObj)
@@ -159,10 +166,24 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
 
-
+    
 }
 
-Collision circleAndCircleCollision()
+// Assumes balls have same radius -- edit later
+Collision circleAndCircleCollision(Object* obj1, Object* obj2)
 {
+    CircleObject *obj1_C = (CircleObject*)obj1->typeObj, *obj2_C = (CircleObject*)obj2->typeObj;
+    Vector2 d1 = getFrameVel(obj1->vel), d2 = getFrameVel(obj1->vel);
 
+    float begDist = vecDist(vecSub(obj1->pos, obj2->pos)), 
+          endDist = vecDist(vecSub(vecAdd(obj1->pos, d1), vecAdd(obj2->pos, d2)));
+
+    if (endDist >= begDist || endDist >= obj1_C->radius * 2) 
+        return (Collision){ -1.0f, 0.0f };
+
+    return (Collision)
+    { 
+        .prop = (obj1_C->radius * 2 - begDist) / (endDist - begDist), 
+        .tanAngle = atan2f(d1.y + d2.y, d1.x + d2.x) 
+    };
 }

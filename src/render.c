@@ -4,7 +4,7 @@
 #include <math.h>
 #include "ballPhysics.h"
 
-static ObjectList objects;
+static ObjectList objects; 
 static int targetFPS, nBalls, radius;
 static float speedMod;
 
@@ -17,22 +17,6 @@ void handleObjectsResize(void);
 
 int main(int argc, char** argv)
 {
-    speedMod = 0.0f;
-    targetFPS = 1;
-    objects.capacity = 1;
-    objects.size = 0;
-    objects.data = (Object*)malloc(sizeof(Object));
-    SetTraceLogLevel(LOG_FATAL);
-    InitWindow(500, 500, "Test");
-    addRectObject((Vector2){ 250, 250 }, (Vector2){ 0 }, (Vector2){ 50, 100 }, 0);
-    addRectObject((Vector2){ 250, 250 }, (Vector2){ 0 }, (Vector2){ 50, 100 }, 180.0f);
-    BeginDrawing();
-    renderObjects();
-    EndDrawing();
-    WaitTime(10);
-    CloseWindow();
-    return 0;
-
     nBalls = 2;
     speedMod = 1.0f;
     radius = 10;
@@ -75,12 +59,12 @@ int main(int argc, char** argv)
         handleSpeedMod(&speedMod, key);
         handleLineCreation(mousePos);
 
+        for (i = 0; i < objects.size; i++)
+            handleCollisions(objects, i);
+
         BeginDrawing();
 
         ClearBackground(backgroundColor);
-
-        for (i = 0; i < objects.size; i++)
-            handleCollisions(objects, i);
         renderObjects();
 
         EndDrawing();
@@ -163,17 +147,17 @@ void renderObjects(void)
             float diagDist = vecDist((Vector2){ w, h });
             float n = obj_R->rotation;
 
-            Vector2 c1 = vecScale((Vector2){ w, h }, 0.5f);
-            Vector2 c2 = vecScale((Vector2){ diagDist * cosf(atan2f(h, w) + n), diagDist * sinf(atan2f(h, w) + n) }, 0.5f);
-            Vector2 cDiff = vecSub(c2, c1);
+            Vector2 c1 = vecScale((Vector2){ w, -h }, 0.5f);
+            Vector2 c2 = vecScale((Vector2){ -cosf(atan2f(h, w) - n), sinf(atan2f(h, w) - n) }, diagDist / 2);
+            Vector2 cDiff = vecAdd(c1, c2);
 
             // New position after rotation and translation to top-left corner
-            Vector2 rPos = getRenderPos(vecSub((Vector2){ obj->pos.x, obj->pos.y + h }, cDiff));
+            Vector2 rPos = getRenderPos(vecAdd((Vector2){ obj->pos.x, obj->pos.y + h }, cDiff));
 
             DrawRectanglePro(
                 (Rectangle){ rPos.x, rPos.y, w, h }, 
                 (Vector2){ 0, 0 },
-                n,
+                getRenderRotation(n),
                 WHITE);
         }
 
@@ -192,11 +176,11 @@ Vector2 getRenderPos(Vector2 pos)
 
 float getRenderRotation(float rotation)
 {
-    return -rotation;
+    return -(rotation * RAD2DEG);
 }
 
-Vector2 getFrameVel(Vector2 traj)
+Vector2 getFrameVel(Vector2 vel)
 {
     // Gets the trajectory modified for a single frame
-    return vecScale(traj, speedMod / targetFPS);
+    return vecScale(vel, speedMod / targetFPS);
 }
