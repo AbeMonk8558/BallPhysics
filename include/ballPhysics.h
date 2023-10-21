@@ -120,7 +120,7 @@ Vector2 vecScale(Vector2 vec, float scalar);
 float vecDist(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
-Vector2 cramerSystem();
 Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
 Matrix2x2 rotationMatrix(float angle);
 Vector2 calcCentroid(Object* obj);
+Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);
