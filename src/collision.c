@@ -7,14 +7,17 @@
 
 Collision circleAndRectCollision(Object* cObj, Object* rObj);
 Collision circleAndCircleCollision(Object* obj1, Object* obj2);
+AABBox getAxisAlignedBBox(Object* obj);
 
 // Condensed bounce vector calculations using the method proposed
 // at this link: https://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
-Vector2 calcBounceVec(Vector2 d, float surfaceAngle)
+Vector2 calcBounceVec(Vector2 vel, float surfaceAngle)
 {
     Vector2 n = { cosf(surfaceAngle), sinf(surfaceAngle) };
 
-    return (Vector2){ 2.0f * n.x * (d.x * n.x + d.y * n.y) - d.x, 2.0f * n.y * (d.x * n.x + d.y * n.y) - d.y };
+    Vector2 nProj = vecScale(n, dotProduct(vel, n)), perpDist = vecSub(vel, nProj);
+
+    return vecInverse(vecSub(perpDist, nProj));
 }
 
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
@@ -27,7 +30,7 @@ Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp)
 
 bool isCollision(Collision clsn)
 {
-    return (clsn.prop < 0 || clsn.tanAngle < 0);
+    return clsn.prop >= 0.0f;
 }
 
 Collision findCollisions(ObjectList objects, int idx)
@@ -62,6 +65,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
 
+    
+
     return NO_CLSN;
 }
 
@@ -77,11 +82,44 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     if (endDist >= begDist || endDist >= obj1_C->radius * 2.0f) 
         return NO_CLSN;
 
-    //printf("Collision detected.\n");
-
     return (Collision)
     { 
         .prop = (begDist - obj1_C->radius * 2.0f) / (begDist - endDist), 
         .tanAngle = atan2f(d1.y + d2.y, d1.x + d2.x) 
     };
+}
+
+AABBox getAxisAlignedBBox(Object* obj)
+{
+    if (obj->type == OBJ_CIRCLE)
+    {
+        CircleObject* obj_C = (CircleObject*)obj->typeObj;
+
+        return (AABBox)
+        {   
+            .pos = (Vector2){ obj->pos.x - obj_C->radius, obj->pos.y - obj_C->radius },
+            .size = (Vector2){ obj_C->radius, obj_C->radius }
+        };
+    }
+    else if (obj->type == OBJ_RECT)
+    {
+        RectObject* obj_R = (RectObject*)obj->typeObj;
+
+        // TODO - Maybe make this more elegant later.
+        Vector2 c = calcCentroid(obj);
+        float cDist = vecDist((Vector2){ obj_R->size.x, obj_R->size.y }) / 2.0f;
+        float r = obj_R->rotation;
+
+        Vector2 pos, size;
+
+        if (r >= 0 && r < PI / 2)
+        {
+            // x2 = x0+(x-x0)*cos(theta)+(y-y0)*sin(theta)
+            // y2 = y0-(x-x0)*sin(theta)+(y-y0)*cos(theta)
+            pos = vecAdd(c, vecScale((Vector2){ cosf(2 * PI / 3 + r), sinf(2 * PI / 3 + r) }, cDist));
+
+        }
+
+        return (AABBox) { pos, size };
+    }
 }

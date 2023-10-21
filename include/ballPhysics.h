@@ -17,10 +17,10 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 // ************************************
 
 // ********** FOR TESTING **************
-#define USE_GEN 0
+#define USE_GEN 1
 // *************************************
 
-#define NO_CLSN ((Collision){ -1.0f, -1.0f })
+#define NO_CLSN ((Collision){ -1.0f, 0.0f }) // The frame-delta proportion until collision can't be negative.
 #define VEC2_ZERO ((Vector2){ 0.0f, 0.0f })
 
 typedef enum RandColorScope
@@ -71,6 +71,20 @@ typedef struct Collision
     float tanAngle;
 } Collision;
 
+typedef struct AABBox // (Axis-aligned bounding box)
+{
+    Vector2 pos;
+    Vector2 size;
+} AABBox;
+
+typedef struct Matrix2x2
+{
+    float a;
+    float b;
+    float c;
+    float d;
+} Matrix2x2;
+
 //render.c
 Vector2 getFrameVel(Vector2 vel);
 void addCircleObject(Vector2 pos, Vector2 vel, float radius);
@@ -95,8 +109,12 @@ Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp);
 bool isCollision(Collision clsn);
 
 //math.c
+bool vecComp(Vector2 left, Vector2 right);
 Vector2 vecAdd(Vector2 left, Vector2 right);
 Vector2 vecSub(Vector2 left, Vector2 right);
 Vector2 vecScale(Vector2 vec, float scalar);
 float vecDist(Vector2 vec);
-bool vecComp(Vector2 left, Vector2 right);
+Vector2 vecInverse(Vector2 vec);
+float dotProduct(Vector2 left, Vector2 right);
+Vector2 cramerSystem();
+Vector2 calcCentroid(Object* obj);
