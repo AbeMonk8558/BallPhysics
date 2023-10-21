@@ -26,5 +26,8 @@
             ]
         }
     ],
+    "env": {
+        "Path": "${env:Path};C:\\msys64\\ucrt64\\bin" 
+        },
     "version": "2.0.0"
 }

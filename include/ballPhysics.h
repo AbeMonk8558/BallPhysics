@@ -17,11 +17,15 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 // ************************************
 
 // ********** FOR TESTING **************
+#define TESTING
 #define USE_GEN 1
 // *************************************
 
 #define NO_CLSN ((Collision){ -1.0f, 0.0f }) // The frame-delta proportion until collision can't be negative.
 #define VEC2_ZERO ((Vector2){ 0.0f, 0.0f })
+
+#define MIN(left, right) ((left) < (right) ? (left) : (right))
+#define MAX(left, right) ((left) > (right) ? (left) : (right))
 
 typedef enum RandColorScope
 {
@@ -117,4 +121,6 @@ float vecDist(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
 Vector2 cramerSystem();
+Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
+Matrix2x2 rotationMatrix(float angle);
 Vector2 calcCentroid(Object* obj);

@@ -18,6 +18,9 @@ void renderObjects(void);
 void freeObjects(void);
 void handleObjectsResize(void);
 
+#ifdef TESTING
+    #include "test.h"
+#else
 int main(int argc, char** argv)
 {
     nBalls = 2;
@@ -41,10 +44,7 @@ int main(int argc, char** argv)
     objects.size = 0;
     objects.capacity = nBalls + 4; // Includes the 4 bounding walls
     objects.data = (Object*)malloc(objects.capacity * sizeof(Object));
-    
     collisions = (Collision*)malloc(objects.capacity * sizeof(Collision));
-    for (i = 0; i < objects.capacity; i++) // <-- May not be necessary
-        collisions[i] = NO_CLSN;
 
     for (i = 0; i < nBalls; i++)
         addCircleObject(VEC2_ZERO, VEC2_ZERO, 10.0f);
@@ -84,6 +84,7 @@ int main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
+#endif
 
 // ******************** GENERIC OBJECT HANDLING ********************
 
@@ -92,6 +93,7 @@ void addCircleObject(Vector2 pos, Vector2 vel, float radius)
     Object* obj;
 
     handleObjectsResize();
+    collisions[objects.size] = NO_CLSN;
     obj = &objects.data[objects.size++];
 
     *obj = (Object){ .type = OBJ_CIRCLE, .pos = pos, .vel = vel, .typeObj = malloc(sizeof(CircleObject)) };
@@ -103,6 +105,7 @@ void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation)
     Object* obj;
 
     handleObjectsResize();
+    collisions[objects.size] = NO_CLSN;
     obj = &objects.data[objects.size++];
 
     *obj = (Object){ .type = OBJ_RECT, .pos = pos, .vel = vel, .typeObj = malloc(sizeof(RectObject)) };
@@ -165,21 +168,18 @@ void renderObjects(void)
             // the centroid. Hence, a conversion must be performed.
             RectObject* obj_R = (RectObject*)obj->typeObj;
 
-            float w = obj_R->size.x, h = obj_R->size.y;
-            float diagDist = vecDist((Vector2){ w, h });
-            float n = obj_R->rotation;
+            float w = obj_R->size.x, h = obj_R->size.y, r = obj_R->rotation;
+            Vector2 c = calcCentroid(obj);
 
-            Vector2 c1 = vecScale((Vector2){ w, -h }, 0.5f);
-            Vector2 c2 = vecScale((Vector2){ -cosf(atan2f(h, w) - n), sinf(atan2f(h, w) - n) }, diagDist / 2);
-            Vector2 cDiff = vecAdd(c1, c2);
+            Matrix2x2 rMatrix = rotationMatrix(r);
+            Vector2 rVec = matrixVecMultiply(vecSub((Vector2){ obj->pos.x, obj->pos.y + h }, c), rMatrix);
 
-            // New position after rotation and translation to top-left corner
-            Vector2 rPos = getRenderPos(vecAdd((Vector2){ obj->pos.x, obj->pos.y + h }, cDiff));
+            Vector2 rPos = getRenderPos(vecAdd(c, rVec));
 
             DrawRectanglePro(
                 (Rectangle){ rPos.x, rPos.y, w, h }, 
                 VEC2_ZERO,
-                getRenderRotation(n),
+                getRenderRotation(r),
                 WHITE);
         }
     }

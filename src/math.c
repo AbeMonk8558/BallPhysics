@@ -3,10 +3,15 @@
 #include <math.h>
 #include "ballPhysics.h" 
 
+// ************* General *******************
+
 bool floatComp(float left, float right)
 {
     //TODO
 }
+
+// **********************************************
+// ************* Basic vector *******************
 
 bool vecComp(Vector2 left, Vector2 right)
 {
@@ -43,6 +48,9 @@ float dotProduct(Vector2 left, Vector2 right)
     return left.x * right.x + left.y * right.y;
 }
 
+// *********************************************
+// ************* Matrix-vector *****************
+
 float determinant(Matrix2x2 matrix)
 {
     return matrix.a * matrix.d - matrix.b * matrix.c;
@@ -52,6 +60,19 @@ Vector2 cramerSystem()
 {
 
 }
+
+Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix)
+{
+    return (Vector2){ vec.x * matrix.a + vec.y * matrix.c, vec.x * matrix.b + vec.y * matrix.d };
+}
+
+Matrix2x2 rotationMatrix(float angle)
+{
+    return (Matrix2x2){ cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
+}
+
+// ************************************************
+// ****************** Object **********************
 
 Vector2 calcCentroid(Object* obj)
 {

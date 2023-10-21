@@ -105,20 +105,29 @@ AABBox getAxisAlignedBBox(Object* obj)
     {
         RectObject* obj_R = (RectObject*)obj->typeObj;
 
-        // TODO - Maybe make this more elegant later.
+        float w = obj_R->size.x, h = obj_R->size.y, r = obj_R->rotation;
         Vector2 c = calcCentroid(obj);
-        float cDist = vecDist((Vector2){ obj_R->size.x, obj_R->size.y }) / 2.0f;
-        float r = obj_R->rotation;
+        Matrix2x2 rMatrix = rotationMatrix(r);
 
-        Vector2 pos, size;
+        Vector2 pos = { INFINITY, INFINITY }, size = { -INFINITY, -INFINITY };
+        int i;
 
-        if (r >= 0 && r < PI / 2)
+        Vector2 vertices[4] = 
         {
-            // x2 = x0+(x-x0)*cos(theta)+(y-y0)*sin(theta)
-            // y2 = y0-(x-x0)*sin(theta)+(y-y0)*cos(theta)
-            pos = vecAdd(c, vecScale((Vector2){ cosf(2 * PI / 3 + r), sinf(2 * PI / 3 + r) }, cDist));
+            vecAdd(c, matrixVecMultiply(vecSub(obj->pos, c), rMatrix)),
+            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x + w, obj->pos.y }, c), rMatrix)),
+            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x + w, obj->pos.y + h }, c), rMatrix)),
+            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x, obj->pos.y + h }, c), rMatrix))
+        };
 
-        }
+        for (i = 0; i < 4; i++)
+        {
+            pos.x = MIN(pos.x, vertices[i].x);
+            pos.y = MIN(pos.y, vertices[i].y);
+            size.x = MAX(size.x, vertices[i].x);
+            size.y = MAX(size.y, vertices[i].y);
+        }        
+        size = vecSub(size, pos);
 
         return (AABBox) { pos, size };
     }
