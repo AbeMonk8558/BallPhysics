@@ -61,6 +61,11 @@ Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix)
     return (Vector2){ vec.x * matrix.a + vec.y * matrix.c, vec.x * matrix.b + vec.y * matrix.d };
 }
 
+Matrix2x2 matrixFromVectors(Vector2 xVec, Vector2 yVec)
+{
+    return (Matrix2x2){ xVec.x, xVec.y, yVec.x, yVec.y };
+}
+
 Matrix2x2 rotationMatrix(float angle)
 {
     return (Matrix2x2){ cosf(angle), sinf(angle), -sinf(angle), cosf(angle) };
@@ -82,8 +87,30 @@ Vector2 calcCentroid(Object* obj)
     }
 }
 
+// Gets vertices of rectangle in order [bttm-left, bttm-right, top-right, top-left]
+Vector2 getRectVertices(Object* rObj, Vector2 vertices[4])
+{
+    RectObject* rObj_R = (RectObject*)rObj->typeObj;
+
+    float w = rObj_R->size.x, h = rObj_R->size.y, r = rObj_R->rotation;
+    Vector2 c = calcCentroid(rObj);
+    Matrix2x2 rMatrix = rotationMatrix(r);
+
+    vertices[0] = vecAdd(c, matrixVecMultiply(vecSub(rObj->pos, c), rMatrix));
+    vertices[1] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ rObj->pos.x + w, rObj->pos.y }, c), rMatrix));
+    vertices[2] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ rObj->pos.x + w, rObj->pos.y + h }, c), rMatrix));
+    vertices[3] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ rObj->pos.x, rObj->pos.y + h }, c), rMatrix));
+}
+
 // Uses Cramer's rule
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
 {
-    
+    float yInt1 = pos1.y - vel1.y / vel1.x * pos1.x,
+          yInt2 = pos2.y - vel2.y / vel2.x * pos2.x;
+
+    float dm = determinant((Matrix2x2){ 1, 1, -vel1.y / vel1.x, -vel2.y / vel2.x });
+    float dx = determinant((Matrix2x2){ yInt1, yInt2, -vel1.y / vel1.x, -vel2.y / vel2.x });
+    float dy = determinant((Matrix2x2){ 1, 1, yInt1, yInt2 });
+
+    return (Vector2){ dx / dm, -dy / dm };
 }

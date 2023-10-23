@@ -60,14 +60,34 @@ Collision findCollisions(ObjectList objects, int idx)
     return NO_CLSN;
 }
 
+// TODO - Assumes rectangle is stationary; fix
 Collision circleAndRectCollision(Object* cObj, Object* rObj)
 {
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
 
-    
+    Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
+    int i;
 
-    return NO_CLSN;
+    Vector2 clsnPos, intersection, slope;
+    float clsnDist = INFINITY, intersectionDist;
+
+    getRectVertices(rObj, vertices);
+
+    // TODO - Minimize intersection calulations by adding a multi-phase check
+    for (i = 0; i < 4; i++)
+    {
+        slope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x};
+        intersection = calcIntersection(cObj->pos, cObj->vel, vertices[i], slope);
+        intersectionDist = vecDist((vecSub(cObj->pos, intersection)));
+
+        if (intersectionDist < clsnDist)
+            clsnPos = intersection, clsnDist = intersectionDist;
+    }
+
+    if (clsnDist <= vecDist(cObj->vel)) return NO_CLSN;
+
+    // TODO - Complete
 }
 
 // Assumes balls have same radius -- edit later
@@ -105,20 +125,11 @@ AABBox getAxisAlignedBBox(Object* obj)
     {
         RectObject* obj_R = (RectObject*)obj->typeObj;
 
-        float w = obj_R->size.x, h = obj_R->size.y, r = obj_R->rotation;
-        Vector2 c = calcCentroid(obj);
-        Matrix2x2 rMatrix = rotationMatrix(r);
-
         Vector2 pos = { INFINITY, INFINITY }, size = { -INFINITY, -INFINITY };
         int i;
 
-        Vector2 vertices[4] = 
-        {
-            vecAdd(c, matrixVecMultiply(vecSub(obj->pos, c), rMatrix)),
-            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x + w, obj->pos.y }, c), rMatrix)),
-            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x + w, obj->pos.y + h }, c), rMatrix)),
-            vecAdd(c, matrixVecMultiply(vecSub((Vector2){ obj->pos.x, obj->pos.y + h }, c), rMatrix))
-        };
+        Vector2 vertices[4];
+        getRectVertices(obj, vertices);
 
         for (i = 0; i < 4; i++)
         {

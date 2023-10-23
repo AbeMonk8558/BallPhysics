@@ -121,6 +121,8 @@ float vecDist(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
 Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
+Matrix2x2 matrixFromVectors(Vector2 xVec, Vector2 yVec);
 Matrix2x2 rotationMatrix(float angle);
 Vector2 calcCentroid(Object* obj);
+Vector2 getRectVertices(Object* rObj, Vector2 vertices[4]);
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);
