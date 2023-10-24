@@ -17,7 +17,7 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 // ************************************
 
 // ********** FOR TESTING **************
-#define TESTING
+//#define TESTING
 #define USE_GEN 1
 // *************************************
 
@@ -120,9 +120,14 @@ Vector2 vecScale(Vector2 vec, float scalar);
 float vecDist(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
+Vector2 vecNormalize(Vector2 vec);
+Vector2 vecProj(Vector2 surface, Vector2 vec);
+Vector2 pointLineProj(Vector2 line, Vector2 point);
+
 Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
 Matrix2x2 matrixFromVectors(Vector2 xVec, Vector2 yVec);
 Matrix2x2 rotationMatrix(float angle);
+
 Vector2 calcCentroid(Object* obj);
 Vector2 getRectVertices(Object* rObj, Vector2 vertices[4]);
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);

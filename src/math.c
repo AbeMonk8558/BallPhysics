@@ -48,6 +48,28 @@ float dotProduct(Vector2 left, Vector2 right)
     return left.x * right.x + left.y * right.y;
 }
 
+Vector2 vecNormalize(Vector2 vec)
+{
+    float dist = vecDist(vec);
+    return (Vector2){ vec.x / dist, vec.y / dist };
+}
+
+// Gets the projected vector onto a surface.
+Vector2 vecProj(Vector2 surface, Vector2 vec)
+{
+    Vector2 n = vecNormalize(surface);
+    return vecScale(n, dotProduct(n, vec));
+}
+
+// Gets the projection vector of a point onto a line (pointing towards the point).
+Vector2 pointLineProj(Vector2 line, Vector2 point)
+{
+    Vector2 n = vecNormalize(line),
+            nProj = vecScale(n, dotProduct(n, point));
+
+    return vecSub(point, nProj);
+}
+
 // *********************************************
 // ************* Matrix-vector *****************
 
@@ -109,8 +131,8 @@ Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
           yInt2 = pos2.y - vel2.y / vel2.x * pos2.x;
 
     float dm = determinant((Matrix2x2){ 1, 1, -vel1.y / vel1.x, -vel2.y / vel2.x });
-    float dx = determinant((Matrix2x2){ yInt1, yInt2, -vel1.y / vel1.x, -vel2.y / vel2.x });
-    float dy = determinant((Matrix2x2){ 1, 1, yInt1, yInt2 });
+    float dx = determinant((Matrix2x2){ yInt1, yInt2, 1, 1 });
+    float dy = determinant((Matrix2x2){ -vel1.y / vel1.x, -vel2.y / vel2.x, yInt1, yInt2 });
 
-    return (Vector2){ dx / dm, -dy / dm };
+    return vecInverse((Vector2){ dx / dm, dy / dm });
 }

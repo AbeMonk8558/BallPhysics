@@ -15,9 +15,10 @@ Vector2 calcBounceVec(Vector2 vel, float surfaceAngle)
 {
     Vector2 n = { cosf(surfaceAngle), sinf(surfaceAngle) };
 
-    Vector2 nProj = vecScale(n, dotProduct(vel, n)), perpDist = vecSub(vel, nProj);
+    Vector2 parallelVec = vecProj(n, vel);
+    Vector2 perpVec = pointLineProj(n, vel);
 
-    return vecInverse(vecSub(perpDist, nProj));
+    return vecInverse(vecSub(parallelVec, perpVec));
 }
 
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
@@ -65,29 +66,37 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
 {
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
+    Vector2 dc = getFrameVel(cObj->vel), dr = getFrameVel(rObj->vel);
 
     Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
-    int i;
-
-    Vector2 clsnPos, intersection, slope;
-    float clsnDist = INFINITY, intersectionDist;
+    int i, clsnSide;
+    Vector2 clsnPos, curClsnPos, slope, curSlope;
+    float clsnDist = INFINITY, curClsnDist, begDist, prop;
 
     getRectVertices(rObj, vertices);
 
     // TODO - Minimize intersection calulations by adding a multi-phase check
     for (i = 0; i < 4; i++)
     {
-        slope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x};
-        intersection = calcIntersection(cObj->pos, cObj->vel, vertices[i], slope);
-        intersectionDist = vecDist((vecSub(cObj->pos, intersection)));
+        curSlope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x};
+        curClsnPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
+        curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
-        if (intersectionDist < clsnDist)
-            clsnPos = intersection, clsnDist = intersectionDist;
+        if (curClsnDist < clsnDist)
+            clsnPos = curClsnPos, clsnDist = curClsnDist, clsnSide = i, slope = curSlope;
     }
 
-    if (clsnDist <= vecDist(cObj->vel)) return NO_CLSN;
+    Vector2 n = vecNormalize(slope);
+    begDist = vecDist(vecSub(cObj->pos, vecScale(n, dotProduct(n, cObj->pos))));
+    prop = (begDist - cObj_C->radius) / begDist;
+    
+    if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
 
-    // TODO - Complete
+    return (Collision)
+    {
+        .prop = prop,
+        .tanAngle = atan2f(slope.y, slope.x)
+    };
 }
 
 // Assumes balls have same radius -- edit later

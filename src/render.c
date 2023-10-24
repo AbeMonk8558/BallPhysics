@@ -81,6 +81,7 @@ int main(int argc, char** argv)
 
     CloseWindow();
     freeObjects();
+    free(collisions);
 
     return EXIT_SUCCESS;
 }
@@ -167,14 +168,11 @@ void renderObjects(void)
             // The rotation stored in this program's RectObject struct is a rotation around
             // the centroid. Hence, a conversion must be performed.
             RectObject* obj_R = (RectObject*)obj->typeObj;
-
+            Vector2 vertices[4], rPos;
             float w = obj_R->size.x, h = obj_R->size.y, r = obj_R->rotation;
-            Vector2 c = calcCentroid(obj);
 
-            Matrix2x2 rMatrix = rotationMatrix(r);
-            Vector2 rVec = matrixVecMultiply(vecSub((Vector2){ obj->pos.x, obj->pos.y + h }, c), rMatrix);
-
-            Vector2 rPos = getRenderPos(vecAdd(c, rVec));
+            getRectVertices(obj, vertices);
+            rPos = getRenderPos(vertices[3]);
 
             DrawRectanglePro(
                 (Rectangle){ rPos.x, rPos.y, w, h }, 
