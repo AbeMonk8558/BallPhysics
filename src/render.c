@@ -53,9 +53,9 @@ int main(int argc, char** argv)
     genLocations(objects);
 
     // Adding the 4 edge walls
-    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ 0, GetScreenHeight() }, 0.0f);
-    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
-    addRectObject((Vector2){ GetScreenWidth(), 0 }, VEC2_ZERO, (Vector2){ 0, GetScreenHeight() }, 0.0f);
+    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ 1, GetScreenHeight() }, 0.0f);
+    addRectObject(VEC2_ZERO, VEC2_ZERO, (Vector2){ GetScreenWidth(), 1 }, 0.0f);
+    addRectObject((Vector2){ GetScreenWidth() - 1, 0 }, VEC2_ZERO, (Vector2){ 1, GetScreenHeight() }, 0.0f);
     addRectObject((Vector2){ 0, GetScreenHeight() }, VEC2_ZERO, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
     // ******************************************************************
 
@@ -138,15 +138,29 @@ void renderObjects(void)
     Vector2 d;
     Object* obj;
 
+    static int cnum = 1; // FOR TESTING
+
     for (i = 0; i < objects.size; i++)
     {
         obj = &objects.data[i];
 
         if (isCollision(collisions[i]))
         {
+            //printf("COL: %f, %f\n", collisions[i].prop, collisions[i].tanAngle);
             Vector2 bounceVec = calcBounceVec(obj->vel, collisions[i].tanAngle);
             d = getFrameVel(calcCollisionVec(objects.data[i].vel, bounceVec, collisions[i].prop));
             obj->vel = bounceVec;
+
+            if (cnum >= 16 && obj->type == OBJ_CIRCLE)
+            {
+                int casd = 5;
+            }
+            // if (obj->type == OBJ_RECT)
+            //     printf("RECT: ");
+            // else 
+            //     printf("CIRCLE: ");
+            // printf("(%f, %f)\n", bounceVec.x, bounceVec.y);
+            cnum++; // FOR TESTING
         }
         else
         {

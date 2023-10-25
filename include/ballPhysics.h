@@ -122,7 +122,7 @@ Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
 Vector2 vecNormalize(Vector2 vec);
 Vector2 vecProj(Vector2 surface, Vector2 vec);
-Vector2 pointLineProj(Vector2 line, Vector2 point);
+Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos);
 
 Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
 Matrix2x2 matrixFromVectors(Vector2 xVec, Vector2 yVec);

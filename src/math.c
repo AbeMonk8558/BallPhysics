@@ -61,13 +61,12 @@ Vector2 vecProj(Vector2 surface, Vector2 vec)
     return vecScale(n, dotProduct(n, vec));
 }
 
-// Gets the projection vector of a point onto a line (pointing towards the point).
-Vector2 pointLineProj(Vector2 line, Vector2 point)
+// Gets the difference vector (pointing towards the point) from a point onto a positioned line.
+Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
 {
-    Vector2 n = vecNormalize(line),
-            nProj = vecScale(n, dotProduct(n, point));
-
-    return vecSub(point, nProj);
+    Vector2 proj = vecAdd(vecProj(lineSlope, point), linePos);
+    
+    return vecSub(point, proj);
 }
 
 // *********************************************
@@ -127,6 +126,15 @@ Vector2 getRectVertices(Object* rObj, Vector2 vertices[4])
 // Uses Cramer's rule
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
 {
+    // Uses stupid-ass method of transforming basis by arbitrary angle to avoid undefined lines. Will
+    // probably edit later, but for now I'm proud of myself for actually understanding linear algebra.
+
+    Matrix2x2 rMatrix = rotationMatrix(PI / 4);
+    pos1 = matrixVecMultiply(pos1, rMatrix);
+    vel1 = matrixVecMultiply(vel1, rMatrix);
+    pos2 = matrixVecMultiply(pos2, rMatrix);
+    vel2 = matrixVecMultiply(vel2, rMatrix);
+
     float yInt1 = pos1.y - vel1.y / vel1.x * pos1.x,
           yInt2 = pos2.y - vel2.y / vel2.x * pos2.x;
 
@@ -134,5 +142,5 @@ Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
     float dx = determinant((Matrix2x2){ yInt1, yInt2, 1, 1 });
     float dy = determinant((Matrix2x2){ -vel1.y / vel1.x, -vel2.y / vel2.x, yInt1, yInt2 });
 
-    return vecInverse((Vector2){ dx / dm, dy / dm });
+    return matrixVecMultiply(vecInverse((Vector2){ dx / dm, dy / dm }), rotationMatrix(-PI / 4));
 }

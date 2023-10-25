@@ -15,10 +15,10 @@ Vector2 calcBounceVec(Vector2 vel, float surfaceAngle)
 {
     Vector2 n = { cosf(surfaceAngle), sinf(surfaceAngle) };
 
-    Vector2 parallelVec = vecProj(n, vel);
-    Vector2 perpVec = pointLineProj(n, vel);
+    Vector2 projVec = vecProj(n, vel);
+    Vector2 perpVec = pointLineDiff(vel, n, VEC2_ZERO);
 
-    return vecInverse(vecSub(parallelVec, perpVec));
+    return vecSub(projVec, perpVec);
 }
 
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
@@ -78,7 +78,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     // TODO - Minimize intersection calulations by adding a multi-phase check
     for (i = 0; i < 4; i++)
     {
-        curSlope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x};
+        curSlope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x };
         curClsnPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
         curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
@@ -86,8 +86,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
             clsnPos = curClsnPos, clsnDist = curClsnDist, clsnSide = i, slope = curSlope;
     }
 
-    Vector2 n = vecNormalize(slope);
-    begDist = vecDist(vecSub(cObj->pos, vecScale(n, dotProduct(n, cObj->pos))));
+    begDist = vecDist(pointLineDiff(cObj->pos, slope, vertices[clsnSide]));
     prop = (begDist - cObj_C->radius) / begDist;
     
     if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
@@ -151,4 +150,6 @@ AABBox getAxisAlignedBBox(Object* obj)
 
         return (AABBox) { pos, size };
     }
+
+    return (AABBox){ VEC2_ZERO, VEC2_ZERO };
 }
