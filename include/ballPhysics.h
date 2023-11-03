@@ -131,3 +131,6 @@ Matrix2x2 rotationMatrix(float angle);
 Vector2 calcCentroid(Object* obj);
 Vector2 getRectVertices(Object* rObj, Vector2 vertices[4]);
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);
+
+Vector2 calcMotion(Vector2 pos, Vector2 vel);
+Vector2 calcMotionP(Vector2 pos, Vector2 vel, float prop);

@@ -3,8 +3,9 @@ AABBox getAxisAlignedBBox(Object* obj);
 
 int main()
 {
-    Vector2 i = calcIntersection((Vector2){ 7, 8 }, (Vector2){ 1, 9 }, (Vector2){ -100, 50 }, (Vector2){ 5, 1 });
+    Vector2 i = calcIntersection((Vector2){ 6, 7 }, (Vector2){ 5, 1}, (Vector2){ 90, 5 }, (Vector2){ 1, 2 });
     printf("(%f, %f)\n", i.x, i.y);
+    return 0;
 
     targetFPS = DEF_TARGET_FPS;
     speedMod = 1.0f;

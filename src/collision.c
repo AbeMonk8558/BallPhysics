@@ -47,9 +47,9 @@ Collision findCollisions(ObjectList objects, int idx)
         Object* obj2 = &objects.data[i];
 
         if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_RECT)
-            clsn = circleAndRectCollision(obj, obj2);
+            continue; //clsn = circleAndRectCollision(obj, obj2);
         else if (obj->type == OBJ_RECT && obj2->type == OBJ_CIRCLE)
-            clsn = circleAndRectCollision(obj2, obj);
+            continue; //clsn = circleAndRectCollision(obj2, obj);
         else
             clsn = circleAndCircleCollision(obj, obj2);
 
@@ -78,7 +78,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     // TODO - Minimize intersection calulations by adding a multi-phase check
     for (i = 0; i < 4; i++)
     {
-        curSlope = (Vector2){ vertices[(i + 1) % 4].y - vertices[i].y, vertices[(i + 1) % 4].x - vertices[i].x };
+        curSlope = (Vector2){ vertices[(i + 1) % 4].x - vertices[i].x, vertices[(i + 1) % 4].y - vertices[i].y };
         curClsnPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
         curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
@@ -103,17 +103,45 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
 {
     CircleObject *obj1_C = (CircleObject*)obj1->typeObj, *obj2_C = (CircleObject*)obj2->typeObj;
     Vector2 d1 = getFrameVel(obj1->vel), d2 = getFrameVel(obj2->vel);
+    Vector2 p1 = obj1->pos, p2 = obj2->pos;
+    float r1 = obj1_C->radius, r2 = obj2_C->radius;
 
-    float begDist = vecDist(vecSub(obj1->pos, obj2->pos)), 
-          endDist = vecDist(vecSub(vecAdd(obj1->pos, d1), vecAdd(obj2->pos, d2)));
+    float a, b, c, discriminant, prop;
+    Vector2 pp1, pp2, cDiff;
 
-    if (endDist >= begDist || endDist >= obj1_C->radius * 2.0f) 
-        return NO_CLSN;
+    // All calculations are derived from setting the distance formula equal to
+    // 2 times the radius and expanding. The result is a quadratic in terms of time
+    // (frame proportion) that can be solved using the quadratic formula. An explanation 
+    // of the math will be on Github at some point.
+
+    a = (d1.x * d1.x) + (d2.x * d2.x) - (2 * d1.x * d2.x) + 
+        (d1.y * d1.y) + (d2.y * d2.y) - (2 * d1.y * d2.y);
+
+    b = 2 * (p1.x * d1.x - p1.x * d2.x - p2.x * d1.x + p2.x * d2.x) + 
+        2 * (p1.y * d1.y - p1.y * d2.y - p2.y * d1.y + p2.y * d2.y);
+
+    c = (p1.x * p1.x) + (p2.x * p2.x) - (2 * p1.x * p2.x) + 
+        (p1.y * p1.y) + (p2.y * p2.y) - (2 * p1.y * p2.y) - 
+        (r1 + r2) * (r1 + r2);
+
+    discriminant = (b * b) - (4 * a * c);
+
+    if (discriminant < 0.0f) return NO_CLSN;
+
+    prop = -(b + sqrt(discriminant)) / (2 * a);
+
+    if (prop > 1.0f) return NO_CLSN;
+
+    // Determining the collision angle
+
+    pp1 = calcMotionP(p1, d1, prop);
+    pp2 = calcMotionP(p2, d2, prop);
+    cDiff = vecSub(pp2, pp1);
 
     return (Collision)
     { 
-        .prop = (begDist - obj1_C->radius * 2.0f) / (begDist - endDist), 
-        .tanAngle = atan2f(d1.y + d2.y, d1.x + d2.x) 
+        .prop = prop,
+        .tanAngle = atan2f(-cDiff.x, cDiff.y) // Gets perpendicular (tan) angle to diff angle
     };
 }
 

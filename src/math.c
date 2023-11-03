@@ -129,7 +129,9 @@ Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
     // Uses stupid-ass method of transforming basis by arbitrary angle to avoid undefined lines. Will
     // probably edit later, but for now I'm proud of myself for actually understanding linear algebra.
 
-    Matrix2x2 rMatrix = rotationMatrix(PI / 4);
+    static arbitraryAngle = 7.8989898;
+
+    Matrix2x2 rMatrix = rotationMatrix(arbitraryAngle);
     pos1 = matrixVecMultiply(pos1, rMatrix);
     vel1 = matrixVecMultiply(vel1, rMatrix);
     pos2 = matrixVecMultiply(pos2, rMatrix);
@@ -142,5 +144,21 @@ Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
     float dx = determinant((Matrix2x2){ yInt1, yInt2, 1, 1 });
     float dy = determinant((Matrix2x2){ -vel1.y / vel1.x, -vel2.y / vel2.x, yInt1, yInt2 });
 
-    return matrixVecMultiply(vecInverse((Vector2){ dx / dm, dy / dm }), rotationMatrix(-PI / 4));
+    return matrixVecMultiply(vecInverse((Vector2){ dx / dm, dy / dm }), rotationMatrix(-arbitraryAngle));
 }
+
+// ********************************************************************
+// ************************ Kinematics ********************************
+
+Vector2 calcMotion(Vector2 pos, Vector2 vel)
+{
+    // Could get more complex later on with mass and acceleration, so this is pre-empting that.
+    return vecAdd(pos, vel);
+}
+
+Vector2 calcMotionP(Vector2 pos, Vector2 vel, float prop)
+{
+    return vecAdd(pos, vecScale(vel, prop));
+}
+
+// ********************************************************************

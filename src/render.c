@@ -137,37 +137,25 @@ void renderObjects(void)
     int i;
     Vector2 d;
     Object* obj;
-
-    static int cnum = 1; // FOR TESTING
+    Collision* clsn;
 
     for (i = 0; i < objects.size; i++)
     {
         obj = &objects.data[i];
+        clsn = &collisions[i];
 
-        if (isCollision(collisions[i]))
+        if (isCollision(*clsn))
         {
-            //printf("COL: %f, %f\n", collisions[i].prop, collisions[i].tanAngle);
-            Vector2 bounceVec = calcBounceVec(obj->vel, collisions[i].tanAngle);
-            d = getFrameVel(calcCollisionVec(objects.data[i].vel, bounceVec, collisions[i].prop));
+            Vector2 bounceVec = calcBounceVec(obj->vel, clsn->tanAngle);
+            d = getFrameVel(calcCollisionVec(obj->vel, bounceVec, clsn->prop));
             obj->vel = bounceVec;
-
-            if (cnum >= 16 && obj->type == OBJ_CIRCLE)
-            {
-                int casd = 5;
-            }
-            // if (obj->type == OBJ_RECT)
-            //     printf("RECT: ");
-            // else 
-            //     printf("CIRCLE: ");
-            // printf("(%f, %f)\n", bounceVec.x, bounceVec.y);
-            cnum++; // FOR TESTING
         }
         else
         {
-            d = getFrameVel(objects.data[i].vel);
+            d = getFrameVel(obj->vel);
         }
 
-        obj->pos = vecAdd(obj->pos, d);
+        obj->pos = calcMotion(obj->pos, d);
 
         if (obj->type == OBJ_CIRCLE)
         {
