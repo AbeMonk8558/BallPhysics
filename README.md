@@ -21,4 +21,8 @@ detail because its tedious as a MF, but the steps will be outlined below along w
 3. Subsitute that for `d(t)` in the equation `d(t) = r1 + r2`.
 4. Square both sides and subtract both by `r1 + r2`, yielding a quadratic polynomial set to 0.
 5. Now combine all the terms with <code>t<sup>2</sup></code> together. Do the same with all the `t` terms and constant terms.
-6. The result will be a quadratic equation that can be solved using traditional methods, namely the quadratic formula. Here's the equation for reference:
+6. The result will be a quadratic equation that can be solved using traditional methods, namely the quadratic formula.
+
+<!-- end of the list -->
+
+Here's a [Desmos graph](https://www.desmos.com/calculator/y7s1hssxid) I created to prove that the discussed method works. Under the folder `Proportion Solve` you can find the quadratic setup and solution.
