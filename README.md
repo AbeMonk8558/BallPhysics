@@ -8,5 +8,5 @@ In the future, the math behind the continuous collision detection will be explai
 1. Let `a` and `b` be the initial positions of 2 circles.
 2. Let `u` and `v` be the velocities of the 2 circles.
 3. Let `t` measure elapsed time since the initial positions.
-4. To find the position of a circle along a dimension (x or y), use the kinematic motion equation <code>p<sub>i</sub>(t) = a<sub>i</sub> + v<sub>i</sub> * t</code>, where `i` is a dimension.
-5. To find the distance between any 2 points, use Euler's distance formula subsituted with the kinematic motion equation: 
+4. To find the position of a circle along a dimension (x or y), use the kinematic motion equation <code>p<sub>i</sub>(t) = p0<sub>i</sub> + v<sub>i</sub> * t</code>, where `i` is a dimension, `v` is a velocity, and `p0` is an initial position.
+5. To find the distance between any 2 points, use Euler's distance formula subsituted with the kinematic motion equation: <code>sqrt((a<sub>x</sub>(t) - b<sub>x</sub>(t))<sup>2</sup> + (a<sub>y</sub>(t) - b<sub>y</sub>(t))<sup>2</sup></code>
