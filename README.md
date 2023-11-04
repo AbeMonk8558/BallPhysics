@@ -19,11 +19,11 @@ detail because its tedious as a MF, but the steps will be outlined below along w
 1. Substitute the actual kinematic motion equations into `d(t)` instead of just their identifiers.
 2. Expand the entire expression under the radical (this will take a hot second).
 3. Subsitute that for `d(t)` in the equation `d(t) = r1 + r2`.
-4. Square both sides and subtract both by `r1 + r2`, yielding a quadratic polynomial set to 0.
+4. Square both sides and then subtract both by <code>(r1 + r2)<sup>2</sup></code>, yielding a quadratic polynomial set to 0.
 5. Now combine all the terms with <code>t<sup>2</sup></code> together. Do the same with all the `t` terms and constant terms.
 6. The result will be a quadratic equation that can be solved using traditional methods, namely the quadratic formula.
 
 <!-- end of the list -->
 
-Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve` you can find the quadratic setup and solution.
-The answer at this [Stackoverflow post](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790) helped me come to this solution, just for extra information.
+Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve`, you can find the quadratic setup and solution.
+The answer at this [Stackoverflow post](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790) helped me come to this solution, just for extra information. The code for this is, obviously, in the source under `collision.c`.
