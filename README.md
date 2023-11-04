@@ -25,5 +25,5 @@ detail because its tedious as a MF, but the steps will be outlined below along w
 
 <!-- end of the list -->
 
-Here's a [Desmos graph](https://www.desmos.com/calculator/y7s1hssxid) I created to prove that the discussed method works. Under the folder `Proportion Solve` you can find the quadratic setup and solution.
+Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve` you can find the quadratic setup and solution.
 The answer at this [Stackoverflow post](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790) helped me come to this solution, just for extra information.
