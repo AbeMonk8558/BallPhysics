@@ -18,7 +18,7 @@ Vector2 calcBounceVec(Vector2 vel, float surfaceAngle)
     Vector2 projVec = vecProj(n, vel);
     Vector2 perpVec = pointLineDiff(vel, n, VEC2_ZERO);
 
-    return vecSub(projVec, perpVec);
+    return vecAdd(projVec, perpVec);
 }
 
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
@@ -47,9 +47,9 @@ Collision findCollisions(ObjectList objects, int idx)
         Object* obj2 = &objects.data[i];
 
         if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_RECT)
-            continue; //clsn = circleAndRectCollision(obj, obj2);
+            clsn = circleAndRectCollision(obj, obj2);
         else if (obj->type == OBJ_RECT && obj2->type == OBJ_CIRCLE)
-            continue; //clsn = circleAndRectCollision(obj2, obj);
+            clsn = circleAndRectCollision(obj2, obj);
         else
             clsn = circleAndCircleCollision(obj, obj2);
 
@@ -69,8 +69,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     Vector2 dc = getFrameVel(cObj->vel), dr = getFrameVel(rObj->vel);
 
     Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
-    int i, clsnSide;
-    Vector2 clsnPos, curClsnPos, slope, curSlope;
+    int i;
+    Vector2 clsnPos, curClsnPos, slope, curSlope, vert1, vert2;
     float clsnDist = INFINITY, curClsnDist, begDist, prop;
 
     getRectVertices(rObj, vertices);
@@ -83,13 +83,20 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
         curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
         if (curClsnDist < clsnDist)
-            clsnPos = curClsnPos, clsnDist = curClsnDist, clsnSide = i, slope = curSlope;
+            clsnPos = curClsnPos, clsnDist = curClsnDist, slope = curSlope, 
+            vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
     }
 
-    begDist = vecDist(pointLineDiff(cObj->pos, slope, vertices[clsnSide]));
+    if (clsnPos.x > MAX(vert1.x, vert2.x) || clsnPos.x < MIN(vert1.x, vert2.x) ||
+        clsnPos.y > MAX(vert1.y, vert2.y) || clsnPos.y < MIN(vert1.y, vert2.y))
+            return NO_CLSN;
+
+    begDist = vecDist(pointLineDiff(cObj->pos, slope, vert1));
     prop = (begDist - cObj_C->radius) / begDist;
     
     if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
+
+    printf("Prop: %f\n", prop);
 
     return (Collision)
     {

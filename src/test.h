@@ -3,8 +3,8 @@ AABBox getAxisAlignedBBox(Object* obj);
 
 int main()
 {
-    Vector2 i = calcIntersection((Vector2){ 6, 7 }, (Vector2){ 5, 1}, (Vector2){ 90, 5 }, (Vector2){ 1, 2 });
-    printf("(%f, %f)\n", i.x, i.y);
+    Vector2 diff = pointLineDiff((Vector2){ 90, 12 }, (Vector2){ 2, 1 }, (Vector2){ 7, 6 });
+    printf("(%f, %f)\n", diff.x, diff.y);
     return 0;
 
     targetFPS = DEF_TARGET_FPS;

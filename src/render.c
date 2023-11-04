@@ -187,6 +187,11 @@ void renderObjects(void)
 
 // ******************************************************
 
+Vector2 getStandardPos(Vector2 renderPos)
+{
+    return (Vector2){ renderPos.x, GetScreenHeight() - renderPos.y - 1 };
+}
+
 Vector2 getRenderPos(Vector2 pos)
 {
     // Modifies for the inverted y-axis in the graphics plane

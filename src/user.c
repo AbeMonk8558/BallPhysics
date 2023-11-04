@@ -2,6 +2,8 @@
 #include <raygui.h>
 #include "ballPhysics.h"
 
+#include <stdio.h>
+
 // void configureUI(void)
 // {
     
@@ -34,5 +36,15 @@ void handleLineCreation(Vector2 mousePos)
     else if (IsMouseButtonDown(lineBtn))
     {
         DrawLineV(currLnStart, mousePos, WHITE);
+    }
+    else if (IsMouseButtonReleased(lineBtn))
+    {
+        Vector2 m = getStandardPos(mousePos);
+        Vector2 c = getStandardPos(currLnStart);
+
+        printf("m: (%f, %f)\n", m.x, m.y);
+        printf("c: (%f, %f)\n", c.x, c.y);
+
+        addRectObject(m, VEC2_ZERO, (Vector2){ 1, c.y - m.y }, 0.0f);
     }
 }

@@ -90,6 +90,7 @@ typedef struct Matrix2x2
 } Matrix2x2;
 
 //render.c
+Vector2 getStandardPos(Vector2 renderPos);
 Vector2 getFrameVel(Vector2 vel);
 void addCircleObject(Vector2 pos, Vector2 vel, float radius);
 void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
@@ -118,6 +119,7 @@ Vector2 vecAdd(Vector2 left, Vector2 right);
 Vector2 vecSub(Vector2 left, Vector2 right);
 Vector2 vecScale(Vector2 vec, float scalar);
 float vecDist(Vector2 vec);
+float vecDistSquared(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
 Vector2 vecNormalize(Vector2 vec);

@@ -38,6 +38,11 @@ float vecDist(Vector2 vec)
     return sqrtf(vec.x * vec.x + vec.y * vec.y);
 }
 
+float vecDistSquared(Vector2 vec)
+{
+    return vec.x * vec.x + vec.y * vec.y;
+}
+
 Vector2 vecInverse(Vector2 vec)
 {
     return (Vector2){-vec.x, -vec.y};
@@ -61,12 +66,16 @@ Vector2 vecProj(Vector2 surface, Vector2 vec)
     return vecScale(n, dotProduct(n, vec));
 }
 
-// Gets the difference vector (pointing towards the point) from a point onto a positioned line.
+// Gets the vector difference from a point to the closest point on a line (pointing towards the line).
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
 {
-    Vector2 proj = vecAdd(vecProj(lineSlope, point), linePos);
-    
-    return vecSub(point, proj);
+    // Derives from the relationship linePos + (lambda)lineSlope = linePoint solved
+    // for lambda using the relationship (linePoint - point) * lineSlope = 0 where "*"
+    // is the dot product. This is true b/c the * of perpendicular vectors is always 0.
+    float lambda = dotProduct(vecSub(point, linePos), lineSlope) / vecDistSquared(lineSlope);
+    Vector2 linePoint = vecAdd(linePos, vecScale(lineSlope, lambda));
+
+    return vecSub(linePoint, point);
 }
 
 // *********************************************
