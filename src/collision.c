@@ -87,8 +87,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
             vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
     }
 
-    if (clsnPos.x > MAX(vert1.x, vert2.x) || clsnPos.x < MIN(vert1.x, vert2.x) ||
-        clsnPos.y > MAX(vert1.y, vert2.y) || clsnPos.y < MIN(vert1.y, vert2.y))
+    if (looseFloatGt(clsnPos.x, MAX(vert1.x, vert2.x)) || looseFloatLt(clsnPos.x, MIN(vert1.x, vert2.x)) ||
+        looseFloatGt(clsnPos.y, MAX(vert1.y, vert2.y)) || looseFloatLt(clsnPos.y, MIN(vert1.y, vert2.y)))
             return NO_CLSN;
 
     begDist = vecDist(pointLineDiff(cObj->pos, slope, vert1));
@@ -96,7 +96,9 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     
     if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
 
-    printf("Prop: %f\n", prop);
+    printf("Vert1: <%f, %f>\n", vert1.x, vert1.y);
+    printf("Vert2: <%f, %f>\n", vert2.x, vert2.y);
+    printf("ClsnPos: <%f, %f>\n", clsnPos.x, clsnPos.y);
 
     return (Collision)
     {
@@ -121,21 +123,21 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     // (frame proportion) that can be solved using the quadratic formula. An explanation 
     // of the math will be on Github at some point.
 
-    a = (d1.x * d1.x) + (d2.x * d2.x) - (2 * d1.x * d2.x) + 
-        (d1.y * d1.y) + (d2.y * d2.y) - (2 * d1.y * d2.y);
+    a = (d1.x * d1.x) + (d2.x * d2.x) - (2.0f * d1.x * d2.x) + 
+        (d1.y * d1.y) + (d2.y * d2.y) - (2.0f * d1.y * d2.y);
 
-    b = 2 * (p1.x * d1.x - p1.x * d2.x - p2.x * d1.x + p2.x * d2.x) + 
-        2 * (p1.y * d1.y - p1.y * d2.y - p2.y * d1.y + p2.y * d2.y);
+    b = 2.0f * (p1.x * d1.x - p1.x * d2.x - p2.x * d1.x + p2.x * d2.x) + 
+        2.0f * (p1.y * d1.y - p1.y * d2.y - p2.y * d1.y + p2.y * d2.y);
 
-    c = (p1.x * p1.x) + (p2.x * p2.x) - (2 * p1.x * p2.x) + 
-        (p1.y * p1.y) + (p2.y * p2.y) - (2 * p1.y * p2.y) - 
+    c = (p1.x * p1.x) + (p2.x * p2.x) - (2.0f * p1.x * p2.x) + 
+        (p1.y * p1.y) + (p2.y * p2.y) - (2.0f * p1.y * p2.y) - 
         (r1 + r2) * (r1 + r2);
 
-    discriminant = (b * b) - (4 * a * c);
+    discriminant = (b * b) - (4.0f * a * c);
 
     if (discriminant < 0.0f) return NO_CLSN;
 
-    prop = -(b + sqrt(discriminant)) / (2 * a);
+    prop = -(b + sqrtf(discriminant)) / (2.0f * a);
 
     if (prop > 1.0f) return NO_CLSN;
 

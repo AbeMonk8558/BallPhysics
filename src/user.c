@@ -45,6 +45,6 @@ void handleLineCreation(Vector2 mousePos)
         printf("m: (%f, %f)\n", m.x, m.y);
         printf("c: (%f, %f)\n", c.x, c.y);
 
-        addRectObject(m, VEC2_ZERO, (Vector2){ 1, c.y - m.y }, 0.0f);
+        addRectObject(m, VEC2_ZERO, (Vector2){ 5, c.y - m.y }, PI / 6);
     }
 }

@@ -3,14 +3,6 @@
 #include <math.h>
 #include "ballPhysics.h" 
 
-// ************* General *******************
-
-bool floatComp(float left, float right)
-{
-    //TODO
-}
-
-// **********************************************
 // ************* Basic vector *******************
 
 bool vecComp(Vector2 left, Vector2 right)

@@ -13,8 +13,8 @@ void genTrajectories(ObjectList objects)
         if (i == 0) objects.data[i].vel = (Vector2){ 0, 50 };
         else if (i == 1) objects.data[i].vel = (Vector2){ 0, -50 };
 #else
-        if (i == 0) objects.data[i].vel = (Vector2){ -50, 0 };
-        else if (i == 1) objects.data[i].vel = (Vector2){ -50 * cosf(PI/4), -50 * sinf(PI/4) };
+        if (i == 0) objects.data[i].vel = (Vector2){ -10, 0 };
+        else if (i == 1) objects.data[i].vel = (Vector2){ -10 * cosf(PI/4), -10 * sinf(PI/4) };
 #endif
     }
 }

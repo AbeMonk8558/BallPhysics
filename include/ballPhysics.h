@@ -96,6 +96,9 @@ void addCircleObject(Vector2 pos, Vector2 vel, float radius);
 void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
 
 //common.c
+bool floatEquals(float left, float right);
+bool looseFloatGt(float left, float right);
+bool looseFloatLt(float left, float right);
 Color randomColor(RandColorScope scope);
 
 //generation.c
@@ -114,7 +117,6 @@ Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp);
 bool isCollision(Collision clsn);
 
 //math.c
-bool vecComp(Vector2 left, Vector2 right);
 Vector2 vecAdd(Vector2 left, Vector2 right);
 Vector2 vecSub(Vector2 left, Vector2 right);
 Vector2 vecScale(Vector2 vec, float scalar);
