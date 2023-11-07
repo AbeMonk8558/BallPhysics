@@ -17,7 +17,7 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 // ************************************
 
 // ********** FOR TESTING **************
-//#define TESTING
+#define TESTING
 #define USE_GEN 1
 // *************************************
 
