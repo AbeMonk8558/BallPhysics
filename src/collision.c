@@ -50,7 +50,7 @@ Collision findCollisions(ObjectList objects, int idx)
             clsn = circleAndRectCollision(obj, obj2);
         else if (obj->type == OBJ_RECT && obj2->type == OBJ_CIRCLE)
             clsn = circleAndRectCollision(obj2, obj);
-        else
+        else if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_CIRCLE)
             clsn = circleAndCircleCollision(obj, obj2);
 
         if (clsn.prop < 0.0f) continue;
@@ -78,7 +78,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     // TODO - Minimize intersection calulations by adding a multi-phase check
     for (i = 0; i < 4; i++)
     {
-        curSlope = (Vector2){ vertices[(i + 1) % 4].x - vertices[i].x, vertices[(i + 1) % 4].y - vertices[i].y };
+        curSlope = vecSub(vertices[(i + 1) % 4], vertices[i]);
         curClsnPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
         curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
@@ -87,23 +87,26 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
             vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
     }
 
-    if (looseFloatGt(clsnPos.x, MAX(vert1.x, vert2.x)) || looseFloatLt(clsnPos.x, MIN(vert1.x, vert2.x)) ||
-        looseFloatGt(clsnPos.y, MAX(vert1.y, vert2.y)) || looseFloatLt(clsnPos.y, MIN(vert1.y, vert2.y)))
-            return NO_CLSN;
+    // if (clsnPos.x > MAX(vert1.x, vert2.x) || clsnPos.x < MIN(vert1.x, vert2.x) ||
+    //     clsnPos.y > MAX(vert1.y, vert2.y) || clsnPos.y < MIN(vert1.y, vert2.y))
+    //         return NO_CLSN;
 
     begDist = vecDist(pointLineDiff(cObj->pos, slope, vert1));
     prop = (begDist - cObj_C->radius) / begDist;
     
     if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
-
+    
+    printf("ClsnDist: %f\n", clsnDist * prop);
     printf("Vert1: <%f, %f>\n", vert1.x, vert1.y);
     printf("Vert2: <%f, %f>\n", vert2.x, vert2.y);
     printf("ClsnPos: <%f, %f>\n", clsnPos.x, clsnPos.y);
+    printf("---------------------------------------\n");
 
     return (Collision)
     {
         .prop = prop,
-        .tanAngle = atan2f(slope.y, slope.x)
+        .tanAngle = atan2f(slope.y, slope.x),
+        .isHeadOn = true
     };
 }
 
@@ -116,7 +119,7 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     float r1 = obj1_C->radius, r2 = obj2_C->radius;
 
     float a, b, c, discriminant, prop;
-    Vector2 pp1, pp2, cDiff;
+    Vector2 pp1, pp2, cDiff, clsnLnSlope;
 
     // All calculations are derived from setting the distance formula equal to
     // 2 times the radius and expanding. The result is a quadratic in terms of time
@@ -146,11 +149,13 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     pp1 = calcMotionP(p1, d1, prop);
     pp2 = calcMotionP(p2, d2, prop);
     cDiff = vecSub(pp2, pp1);
+    clsnLnSlope = (Vector2){ -cDiff.y, cDiff.x };
 
     return (Collision)
     { 
         .prop = prop,
-        .tanAngle = atan2f(-cDiff.x, cDiff.y) // Gets perpendicular (tan) angle to diff angle
+        .tanAngle = atan2f(clsnLnSlope.y, clsnLnSlope.x), // Gets perpendicular (tan) angle to diff angle
+        .isHeadOn = isTravelingTowardsLine(p1, d1, vecAdd(pp1, vecScale(cDiff, 0.5f)), clsnLnSlope)
     };
 }
 
@@ -168,8 +173,6 @@ AABBox getAxisAlignedBBox(Object* obj)
     }
     else if (obj->type == OBJ_RECT)
     {
-        RectObject* obj_R = (RectObject*)obj->typeObj;
-
         Vector2 pos = { INFINITY, INFINITY }, size = { -INFINITY, -INFINITY };
         int i;
 

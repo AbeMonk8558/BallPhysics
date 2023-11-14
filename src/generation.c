@@ -31,7 +31,7 @@ void genLocations(ObjectList objects)
         else if (i == 1) objects.data[i].pos = (Vector2){ GetScreenWidth() / 2, GetScreenHeight() - 10 - 1 };
 #else
         if (i == 0) objects.data[i].pos = (Vector2){ 200, 50 };
-        else if (i == 1) objects.data[i].pos = (Vector2){ 50 + 150 * cosf(PI/4), 50 + 150 * sinf(PI/4) };
+        else if (i == 1) objects.data[i].pos = (Vector2){ 80 + 150 * cosf(PI/4), 50 + 150 * sinf(PI/4) };
 #endif
     }
 }

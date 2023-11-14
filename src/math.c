@@ -64,10 +64,23 @@ Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
     // Derives from the relationship linePos + (lambda)lineSlope = linePoint solved
     // for lambda using the relationship (linePoint - point) * lineSlope = 0 where "*"
     // is the dot product. This is true b/c the * of perpendicular vectors is always 0.
-    float lambda = dotProduct(vecSub(point, linePos), lineSlope) / vecDistSquared(lineSlope);
+    float lambda = dotProduct(vecSub(point, linePos), lineSlope) / vecDistSquared(lineSlope); 
     Vector2 linePoint = vecAdd(linePos, vecScale(lineSlope, lambda));
 
     return vecSub(linePoint, point);
+}
+
+bool isTravelingTowardsLine(Vector2 pos, Vector2 vel, Vector2 lnPos, Vector2 slope)
+{
+    static float deltaT = 0.01f;
+
+    Vector2 intsction = calcIntersection(pos, vel, lnPos, slope);
+    Vector2 pp = vecAdd(pos, vecScale(vel, deltaT));
+
+    Vector2 e = vecSub(intsction, pp);
+    Vector2 ere = vecSub(intsction, pos);
+
+    return vecDistSquared(vecSub(intsction, pp)) < vecDistSquared(vecSub(intsction, pos));
 }
 
 // *********************************************
@@ -107,10 +120,12 @@ Vector2 calcCentroid(Object* obj)
     {
         return obj->pos;
     }
+
+    return VEC2_ZERO;
 }
 
 // Gets vertices of rectangle in order [bttm-left, bttm-right, top-right, top-left]
-Vector2 getRectVertices(Object* rObj, Vector2 vertices[4])
+void getRectVertices(Object* rObj, Vector2 vertices[4])
 {
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
 

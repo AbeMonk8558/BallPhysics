@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     collisions = (Collision*)malloc(objects.capacity * sizeof(Collision));
 
     for (i = 0; i < nBalls; i++)
-        addCircleObject(VEC2_ZERO, VEC2_ZERO, 10.0f);
+        addCircleObject(VEC2_ZERO, VEC2_ZERO, 20.0f);
 
     genTrajectories(objects);
     genLocations(objects);
@@ -147,6 +147,8 @@ void renderObjects(void)
         if (isCollision(*clsn))
         {
             Vector2 bounceVec = calcBounceVec(obj->vel, clsn->tanAngle);
+            //if (!clsn->isHeadOn) bounceVec = vecInverse(bounceVec);
+
             d = getFrameVel(calcCollisionVec(obj->vel, bounceVec, clsn->prop));
             obj->vel = bounceVec;
         }

@@ -17,11 +17,11 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 // ************************************
 
 // ********** FOR TESTING **************
-#define TESTING
+//#define TESTING
 #define USE_GEN 1
 // *************************************
 
-#define NO_CLSN ((Collision){ -1.0f, 0.0f }) // The frame-delta proportion until collision can't be negative.
+#define NO_CLSN ((Collision){ -1.0f, 0.0f, false }) // The frame-delta proportion until collision can't be negative.
 #define VEC2_ZERO ((Vector2){ 0.0f, 0.0f })
 
 #define MIN(left, right) ((left) < (right) ? (left) : (right))
@@ -73,6 +73,7 @@ typedef struct Collision
 {
     float prop;
     float tanAngle;
+    bool isHeadOn; // Was the obj involved in a head-on collision, or was it merely pushed (I can't think of a more techincal name)?
 } Collision;
 
 typedef struct AABBox // (Axis-aligned bounding box)
@@ -127,13 +128,14 @@ float dotProduct(Vector2 left, Vector2 right);
 Vector2 vecNormalize(Vector2 vec);
 Vector2 vecProj(Vector2 surface, Vector2 vec);
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos);
+bool isTravelingTowardsLine(Vector2 pos, Vector2 vel, Vector2 lnPos, Vector2 slope);
 
 Vector2 matrixVecMultiply(Vector2 vec, Matrix2x2 matrix);
 Matrix2x2 matrixFromVectors(Vector2 xVec, Vector2 yVec);
 Matrix2x2 rotationMatrix(float angle);
 
 Vector2 calcCentroid(Object* obj);
-Vector2 getRectVertices(Object* rObj, Vector2 vertices[4]);
+void getRectVertices(Object* rObj, Vector2 vertices[4]);
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);
 
 Vector2 calcMotion(Vector2 pos, Vector2 vel);
