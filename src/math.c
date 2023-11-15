@@ -58,6 +58,14 @@ Vector2 vecProj(Vector2 surface, Vector2 vec)
     return vecScale(n, dotProduct(n, vec));
 }
 
+Vector2 vecReflect(Vector2 vel, Vector2 surfaceNorm)
+{
+    float d = dotProduct(vel, surfaceNorm);
+    Vector2 proj = vecProj(surfaceNorm, vel);
+
+    return vecSub(vel, vecScale(proj, 2.0f));
+}
+
 // Gets the vector difference from a point to the closest point on a line (pointing towards the line).
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
 {
@@ -76,9 +84,6 @@ bool isTravelingTowardsLine(Vector2 pos, Vector2 vel, Vector2 lnPos, Vector2 slo
 
     Vector2 intsction = calcIntersection(pos, vel, lnPos, slope);
     Vector2 pp = vecAdd(pos, vecScale(vel, deltaT));
-
-    Vector2 e = vecSub(intsction, pp);
-    Vector2 ere = vecSub(intsction, pos);
 
     return vecDistSquared(vecSub(intsction, pp)) < vecDistSquared(vecSub(intsction, pos));
 }
@@ -159,7 +164,6 @@ Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
 
 Vector2 calcMotion(Vector2 pos, Vector2 vel)
 {
-    // Could get more complex later on with mass and acceleration, so this is pre-empting that.
     return vecAdd(pos, vel);
 }
 

@@ -146,11 +146,10 @@ void renderObjects(void)
 
         if (isCollision(*clsn))
         {
-            Vector2 bounceVec = calcBounceVec(obj->vel, clsn->tanAngle);
-            //if (!clsn->isHeadOn) bounceVec = vecInverse(bounceVec);
+            d = getFrameVel(calcCollisionVec(obj->vel, clsn->outVel, clsn->prop));
+            obj->vel = clsn->outVel;
 
-            d = getFrameVel(calcCollisionVec(obj->vel, bounceVec, clsn->prop));
-            obj->vel = bounceVec;
+            *clsn = NO_CLSN;
         }
         else
         {

@@ -5,21 +5,9 @@
 
 #include <stdio.h>
 
-Collision circleAndRectCollision(Object* cObj, Object* rObj);
+Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main);
 Collision circleAndCircleCollision(Object* obj1, Object* obj2);
 AABBox getAxisAlignedBBox(Object* obj);
-
-// Condensed bounce vector calculations using the method proposed
-// at this link: https://stackoverflow.com/questions/573084/how-to-calculate-bounce-angle
-Vector2 calcBounceVec(Vector2 vel, float surfaceAngle)
-{
-    Vector2 n = { cosf(surfaceAngle), sinf(surfaceAngle) };
-
-    Vector2 projVec = vecProj(n, vel);
-    Vector2 perpVec = pointLineDiff(vel, n, VEC2_ZERO);
-
-    return vecAdd(projVec, perpVec);
-}
 
 // Calculates the trajectory of a vector during a frame during which a bounce occurs by considering
 // the trajectories both before and after the bounce and the proportion of the frame time
@@ -47,9 +35,9 @@ Collision findCollisions(ObjectList objects, int idx)
         Object* obj2 = &objects.data[i];
 
         if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_RECT)
-            clsn = circleAndRectCollision(obj, obj2);
+            clsn = circleAndRectCollision(obj, obj2, obj->type);
         else if (obj->type == OBJ_RECT && obj2->type == OBJ_CIRCLE)
-            clsn = circleAndRectCollision(obj2, obj);
+            clsn = circleAndRectCollision(obj2, obj, obj->type);
         else if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_CIRCLE)
             clsn = circleAndCircleCollision(obj, obj2);
 
@@ -62,7 +50,7 @@ Collision findCollisions(ObjectList objects, int idx)
 }
 
 // TODO - Assumes rectangle is stationary; fix
-Collision circleAndRectCollision(Object* cObj, Object* rObj)
+Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 {
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
@@ -96,17 +84,18 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj)
     
     if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
     
-    printf("ClsnDist: %f\n", clsnDist * prop);
-    printf("Vert1: <%f, %f>\n", vert1.x, vert1.y);
-    printf("Vert2: <%f, %f>\n", vert2.x, vert2.y);
-    printf("ClsnPos: <%f, %f>\n", clsnPos.x, clsnPos.y);
-    printf("---------------------------------------\n");
+    // printf("ClsnDist: %f\n", clsnDist * prop);
+    // printf("Vert1: <%f, %f>\n", vert1.x, vert1.y);
+    // printf("Vert2: <%f, %f>\n", vert2.x, vert2.y);
+    // printf("ClsnPos: <%f, %f>\n", clsnPos.x, clsnPos.y);
+    // printf("---------------------------------------\n");
+
+    if (main == OBJ_RECT) return NO_CLSN;
 
     return (Collision)
     {
         .prop = prop,
-        .tanAngle = atan2f(slope.y, slope.x),
-        .isHeadOn = true
+        .outVel = vecReflect(cObj->vel, (Vector2){ -slope.y, slope.x })
     };
 }
 
@@ -118,8 +107,8 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     Vector2 p1 = obj1->pos, p2 = obj2->pos;
     float r1 = obj1_C->radius, r2 = obj2_C->radius;
 
-    float a, b, c, discriminant, prop;
-    Vector2 pp1, pp2, cDiff, clsnLnSlope;
+    float a, b, c, discriminant, prop, p;
+    Vector2 pp1, pp2, n;
 
     // All calculations are derived from setting the distance formula equal to
     // 2 times the radius and expanding. The result is a quadratic in terms of time
@@ -142,20 +131,20 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
 
     prop = -(b + sqrtf(discriminant)) / (2.0f * a);
 
-    if (prop > 1.0f) return NO_CLSN;
+    if (prop >= 1.0f) return NO_CLSN;
 
     // Determining the collision angle
 
     pp1 = calcMotionP(p1, d1, prop);
     pp2 = calcMotionP(p2, d2, prop);
-    cDiff = vecSub(pp2, pp1);
-    clsnLnSlope = (Vector2){ -cDiff.y, cDiff.x };
+
+    n = vecNormalize(vecSub(pp2, pp1));
+    p = dotProduct(n, vecSub(obj1->vel, obj2->vel));
 
     return (Collision)
     { 
         .prop = prop,
-        .tanAngle = atan2f(clsnLnSlope.y, clsnLnSlope.x), // Gets perpendicular (tan) angle to diff angle
-        .isHeadOn = isTravelingTowardsLine(p1, d1, vecAdd(pp1, vecScale(cDiff, 0.5f)), clsnLnSlope)
+        .outVel = vecScale(vecNormalize(vecSub(obj1->vel, vecScale(n, p))), vecDist(obj1->vel))
     };
 }
 

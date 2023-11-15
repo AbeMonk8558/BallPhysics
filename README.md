@@ -25,5 +25,9 @@ detail because its tedious as a MF, but the steps will be outlined below along w
 
 <!-- end of the list -->
 
-Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve`, you can find the quadratic setup and solution.
-The answer at this [Stackoverflow post](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790) helped me come to this solution, just for extra information. The code for this is, obviously, in the source under `collision.c`.
+Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve`, you can find the quadratic setup and solution. The code for this is in the source under `collision.c`.
+
+### Godly links
+
+1. [Determining when circles collide](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790)
+2. [Handling circle-collision reaction](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790)

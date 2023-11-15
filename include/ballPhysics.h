@@ -72,8 +72,7 @@ typedef struct RectObject
 typedef struct Collision
 {
     float prop;
-    float tanAngle;
-    bool isHeadOn; // Was the obj involved in a head-on collision, or was it merely pushed (I can't think of a more techincal name)?
+    Vector2 outVel;
 } Collision;
 
 typedef struct AABBox // (Axis-aligned bounding box)
@@ -113,7 +112,6 @@ void handleLineCreation(Vector2 mousePos);
 
 //collision.c
 Collision findCollisions(ObjectList objects, int idx);
-Vector2 calcBounceVec(Vector2 d, float surfaceAngle);
 Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp);
 bool isCollision(Collision clsn);
 
@@ -127,6 +125,7 @@ Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
 Vector2 vecNormalize(Vector2 vec);
 Vector2 vecProj(Vector2 surface, Vector2 vec);
+Vector2 vecReflect(Vector2 vel, Vector2 surfaceNorm);
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos);
 bool isTravelingTowardsLine(Vector2 pos, Vector2 vel, Vector2 lnPos, Vector2 slope);
 
