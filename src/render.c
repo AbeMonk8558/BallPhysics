@@ -14,6 +14,7 @@ static float speedMod;
 Vector2 getRenderPos(Vector2 pos);
 float getRenderRotation(float rotation); // <-- Reversed due to x-axis reflection
 
+void updateObjectStates(void);
 void renderObjects(void);
 void freeObjects(void);
 void handleObjectsResize(void);
@@ -68,8 +69,13 @@ int main(int argc, char** argv)
         handleSpeedMod(&speedMod, key);
         handleLineCreation(mousePos);
 
-        for (i = 0; i < objects.size; i++)
-            collisions[i] = findCollisions(objects, i);
+        if (!paused)
+        {
+            for (i = 0; i < objects.size; i++)
+                collisions[i] = findCollisions(objects, i);
+
+            updateObjectStates();
+        }
 
         BeginDrawing();
 
@@ -132,12 +138,12 @@ void freeObjects(void)
     free(objects.data);
 }
 
-void renderObjects(void)
+void updateObjectStates(void)
 {
     int i;
     Vector2 d;
-    Object* obj;
     Collision* clsn;
+    Object* obj;
 
     for (i = 0; i < objects.size; i++)
     {
@@ -157,6 +163,17 @@ void renderObjects(void)
         }
 
         obj->pos = calcMotion(obj->pos, d);
+    }
+}
+
+void renderObjects(void)
+{
+    int i;
+    Object* obj;
+
+    for (i = 0; i < objects.size; i++)
+    {
+        obj = &objects.data[i];
 
         if (obj->type == OBJ_CIRCLE)
         {

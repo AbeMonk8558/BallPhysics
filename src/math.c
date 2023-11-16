@@ -60,13 +60,11 @@ Vector2 vecProj(Vector2 surface, Vector2 vec)
 
 Vector2 vecReflect(Vector2 vel, Vector2 surfaceNorm)
 {
-    float d = dotProduct(vel, surfaceNorm);
     Vector2 proj = vecProj(surfaceNorm, vel);
-
     return vecSub(vel, vecScale(proj, 2.0f));
 }
 
-// Gets the vector difference from a point to the closest point on a line (pointing towards the line).
+// Gets the vector difference from a point to the closest point on a line (pointing towards the line).s
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
 {
     // Derives from the relationship linePos + (lambda)lineSlope = linePoint solved
@@ -119,7 +117,8 @@ Vector2 calcCentroid(Object* obj)
     if (obj->type == OBJ_RECT)
     {
         RectObject* obj_R = (RectObject*)obj->typeObj;
-        return vecAdd(obj->pos, vecScale((Vector2){obj_R->size.x, obj_R->size.y}, 0.5f));
+        
+        return vecAdd(obj->pos, (Vector2){ obj_R->size.x * 0.5f, obj_R->size.y * 0.5f });
     }
     else if (obj->type == OBJ_CIRCLE)
     {

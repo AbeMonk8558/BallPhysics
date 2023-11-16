@@ -30,4 +30,5 @@ Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created 
 ### Godly links
 
 1. [Determining when circles collide](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790)
-2. [Handling circle-collision reaction](https://stackoverflow.com/questions/43577298/calculating-collision-times-between-two-circles-physics/43577790#43577790)
+2. [Handling circle-collision reaction](https://ericleong.me/research/circle-circle/)
+3. [Handling circle-line reaction (used in rectangle-circle collisions)](https://ericleong.me/research/circle-line/)

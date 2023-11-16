@@ -52,45 +52,54 @@ Collision findCollisions(ObjectList objects, int idx)
 // TODO - Assumes rectangle is stationary; fix
 Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 {
+    if (main == OBJ_RECT) return NO_CLSN;
+
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
     Vector2 dc = getFrameVel(cObj->vel), dr = getFrameVel(rObj->vel);
 
     Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
     int i;
-    Vector2 clsnPos, curClsnPos, slope, curSlope, vert1, vert2;
-    float clsnDist = INFINITY, curClsnDist, begDist, prop;
+    Vector2 curIntPos, slope, curSlope, vert1, vert2, clsnPoint, cpp;
+    float clsnDistSq = INFINITY, curClsnDistSq, begDist, prop;
 
     getRectVertices(rObj, vertices);
+    Vector2 rCenter = calcCentroid(rObj);
 
-    // TODO - Minimize intersection calulations by adding a multi-phase check
+    // Determines which side of the rectangle the circle will collide with
     for (i = 0; i < 4; i++)
     {
         curSlope = vecSub(vertices[(i + 1) % 4], vertices[i]);
-        curClsnPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
-        curClsnDist = vecDist((vecSub(cObj->pos, curClsnPos)));
 
-        if (curClsnDist < clsnDist)
-            clsnPos = curClsnPos, clsnDist = curClsnDist, slope = curSlope, 
-            vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
+        // The circle should be traveling in an opposing direction to the side's surface norm pointing opposite the rect center
+        if (dotProduct((pointLineDiff(rCenter, curSlope, vertices[i])), dc) > 0.0f) continue;
+
+        curIntPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
+        curClsnDistSq = vecDistSquared((vecSub(cObj->pos, curIntPos)));
+
+        if (curClsnDistSq < clsnDistSq)
+            clsnDistSq = curClsnDistSq, slope = curSlope, vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
     }
 
-    // if (clsnPos.x > MAX(vert1.x, vert2.x) || clsnPos.x < MIN(vert1.x, vert2.x) ||
-    //     clsnPos.y > MAX(vert1.y, vert2.y) || clsnPos.y < MIN(vert1.y, vert2.y))
-    //         return NO_CLSN;
-
     begDist = vecDist(pointLineDiff(cObj->pos, slope, vert1));
-    prop = (begDist - cObj_C->radius) / begDist;
-    
-    if (clsnDist * prop >= vecDist(dc)) return NO_CLSN;
-    
-    // printf("ClsnDist: %f\n", clsnDist * prop);
-    // printf("Vert1: <%f, %f>\n", vert1.x, vert1.y);
-    // printf("Vert2: <%f, %f>\n", vert2.x, vert2.y);
-    // printf("ClsnPos: <%f, %f>\n", clsnPos.x, clsnPos.y);
-    // printf("---------------------------------------\n");
+    if (vecDistSquared(pointLineDiff(calcMotion(cObj->pos, dc), slope, vert1)) >= powf(begDist, 2.0f)) return NO_CLSN;
 
-    if (main == OBJ_RECT) return NO_CLSN;
+    prop = (begDist - cObj_C->radius) / begDist;
+    if (powf(sqrt(clsnDistSq) * prop, 2.0f) >= vecDistSquared(dc)) return NO_CLSN;
+
+    cpp = calcMotionP(cObj->pos, dc, prop);
+    clsnPoint = vecAdd(cpp, pointLineDiff(cpp, slope, vert1));
+
+    if (clsnPoint.x > MAX(vert1.x, vert2.x) || clsnPoint.x < MIN(vert1.x, vert2.x) ||
+        clsnPoint.y > MAX(vert1.y, vert2.y) || clsnPoint.y < MIN(vert1.y, vert2.y))
+    {
+        Vector2 endptDiff, v1Diff, v2Diff;
+
+        if (true) return NO_CLSN;
+
+        // Circle collides with the endpoint of the rectangle side
+        // TODO - resolve collision in this scenario
+    }
 
     return (Collision)
     {
@@ -115,17 +124,17 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     // (frame proportion) that can be solved using the quadratic formula. An explanation 
     // of the math will be on Github at some point.
 
-    a = (d1.x * d1.x) + (d2.x * d2.x) - (2.0f * d1.x * d2.x) + 
-        (d1.y * d1.y) + (d2.y * d2.y) - (2.0f * d1.y * d2.y);
+    a = powf(d1.x, 2.0f) + powf(d2.x, 2.0f) - (2.0f * d1.x * d2.x) + 
+        powf(d1.y, 2.0f) + powf(d2.y, 2.0f) - (2.0f * d1.y * d2.y);
 
     b = 2.0f * (p1.x * d1.x - p1.x * d2.x - p2.x * d1.x + p2.x * d2.x) + 
         2.0f * (p1.y * d1.y - p1.y * d2.y - p2.y * d1.y + p2.y * d2.y);
 
-    c = (p1.x * p1.x) + (p2.x * p2.x) - (2.0f * p1.x * p2.x) + 
-        (p1.y * p1.y) + (p2.y * p2.y) - (2.0f * p1.y * p2.y) - 
-        (r1 + r2) * (r1 + r2);
+    c = powf(p1.x, 2.0f) + powf(p2.x, 2.0f) - (2.0f * p1.x * p2.x) + 
+        powf(p1.y, 2.0f) + powf(p2.y, 2.0f) - (2.0f * p1.y * p2.y) - 
+        powf(r1 + r2, 2.0f);
 
-    discriminant = (b * b) - (4.0f * a * c);
+    discriminant = powf(b, 2.0f) - (4.0f * a * c);
 
     if (discriminant < 0.0f) return NO_CLSN;
 
@@ -138,13 +147,13 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
     pp1 = calcMotionP(p1, d1, prop);
     pp2 = calcMotionP(p2, d2, prop);
 
-    n = vecNormalize(vecSub(pp2, pp1));
+    n = vecScale(vecSub(pp2, pp1), 1.0f / (r1 + r2));
     p = dotProduct(n, vecSub(obj1->vel, obj2->vel));
 
     return (Collision)
     { 
         .prop = prop,
-        .outVel = vecScale(vecNormalize(vecSub(obj1->vel, vecScale(n, p))), vecDist(obj1->vel))
+        .outVel = vecSub(obj1->vel, vecScale(n, p))
     };
 }
 

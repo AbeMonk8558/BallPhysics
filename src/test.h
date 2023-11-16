@@ -3,10 +3,6 @@ AABBox getAxisAlignedBBox(Object* obj);
 
 int main()
 {
-    Vector2 intersect = calcIntersection((Vector2){5,10},(Vector2){0,1},(Vector2){9,8},(Vector2){1,5});
-    printf("(%f, %f)\n", intersect.x, intersect.y);
-    return 0;
-
     targetFPS = DEF_TARGET_FPS;
     speedMod = 1.0f;
 
@@ -23,19 +19,8 @@ int main()
     InitWindow(500, 500, "Test");
 
     BeginDrawing();
-
-    AABBox b = getAxisAlignedBBox(&objects.data[1]);
-    Vector2 bPos = getRenderPos((Vector2){ b.pos.x, b.pos.y + b.size.y });
-    printf("{ Pos = { %f, %f }, Size = { %f, %f } }\n", b.pos.x, b.pos.y, b.size.x, b.size.y);
-
-    DrawRectanglePro(
-        (Rectangle){ bPos.x, bPos.y, b.size.x, b.size.y },
-        VEC2_ZERO,
-        0.0f,
-        (Color){ 255, 0, 0, 100 }
-    );
-
     renderObjects();
+    DrawCircleV(getRenderPos(calcCentroid(&objects.data[1])), 2.0f, ORANGE);
     EndDrawing();
 
     WaitTime(20);
