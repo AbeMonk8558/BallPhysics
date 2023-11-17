@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <raygui.h>
+#include <math.h>
 #include "ballPhysics.h"
 
 #include <stdio.h>
@@ -27,24 +28,35 @@ void handleLineCreation(Vector2 mousePos)
 {
     MouseButton lineBtn = MOUSE_BUTTON_LEFT;
     static Vector2 currLnStart;
+    static float currRotation;
 
     if (IsMouseButtonPressed(lineBtn))
     {
         currLnStart = mousePos;
-        DrawLineV(mousePos, mousePos, WHITE);
+        currRotation = 0.0f;
+        DrawPixelV(mousePos, WHITE);
     }
     else if (IsMouseButtonDown(lineBtn))
     {
-        DrawLineV(currLnStart, mousePos, WHITE);
+        if (IsKeyPressed(KEY_LEFT)) currRotation -= PI / 6.0f;
+        if (IsKeyPressed(KEY_RIGHT)) currRotation += PI / 6.0f;
+
+        int i;
+        Vector2 vertices[4];
+        Vector2 m = getStandardPos(mousePos), c = getStandardPos(currLnStart);
+
+        getRectVerticesVerbose((Vector2){ MIN(c.x, m.x), MIN(c.y, m.y) }, 
+            (Vector2){ fabsf(m.x - c.x), fabsf(m.y - c.y) }, currRotation, vertices);
+
+        for (i = 0; i < 4; i++)
+            DrawLineV(getRenderPos(vertices[i]), getRenderPos(vertices[(i + 1) % 4]), WHITE);
     }
     else if (IsMouseButtonReleased(lineBtn))
     {
         Vector2 m = getStandardPos(mousePos);
         Vector2 c = getStandardPos(currLnStart);
 
-        printf("m: (%f, %f)\n", m.x, m.y);
-        printf("c: (%f, %f)\n", c.x, c.y);
-
-        addRectObject(m, VEC2_ZERO, (Vector2){ 5, c.y - m.y }, PI / 6);
+        addRectObject((Vector2){ MIN(c.x, m.x), MIN(c.y, m.y) }, VEC2_ZERO, 
+            (Vector2){ fabsf(m.x - c.x), fabsf(m.y - c.y) }, currRotation);
     }
 }

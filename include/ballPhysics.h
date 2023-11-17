@@ -10,7 +10,7 @@ into the graphics "reflected-y-axis" (j-hat: <0, -1>) system at render time.
 */
 
 // ************ SETUP ******************
-#define DEF_TARGET_FPS 30
+#define DEF_TARGET_FPS 60
 #define LOG_LEVEL LOG_FATAL
 #define EPSILON // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 // HANDLE FLOAT COMPARISONS CORRECTLY ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -44,7 +44,7 @@ typedef enum ObjectType
 typedef struct Object
 {
     ObjectType type;
-    Vector2 pos; // <-- Bottom-right corner for rectangles
+    Vector2 pos; // <-- Bottom-left corner for rectangles
     Vector2 vel; // Pixels/sec
     void* typeObj;
 } Object;
@@ -91,6 +91,7 @@ typedef struct Matrix2x2
 
 //render.c
 Vector2 getStandardPos(Vector2 renderPos);
+Vector2 getRenderPos(Vector2 pos);
 Vector2 getFrameVel(Vector2 vel);
 void addCircleObject(Vector2 pos, Vector2 vel, float radius);
 void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
@@ -135,6 +136,7 @@ Matrix2x2 rotationMatrix(float angle);
 
 Vector2 calcCentroid(Object* obj);
 void getRectVertices(Object* rObj, Vector2 vertices[4]);
+void getRectVerticesVerbose(Vector2 pos, Vector2 size, float rotation, Vector2 vertices[4]);
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2);
 
 Vector2 calcMotion(Vector2 pos, Vector2 vel);

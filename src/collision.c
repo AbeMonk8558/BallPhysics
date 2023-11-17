@@ -93,12 +93,38 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     if (clsnPoint.x > MAX(vert1.x, vert2.x) || clsnPoint.x < MIN(vert1.x, vert2.x) ||
         clsnPoint.y > MAX(vert1.y, vert2.y) || clsnPoint.y < MIN(vert1.y, vert2.y))
     {
-        Vector2 endptDiff, v1Diff, v2Diff;
+        Vector2 v1Diff, v2Diff, velClsnPos, cDiff;
+        float v1DiffDistSq, v2DiffDistSq;
 
-        if (true) return NO_CLSN;
+        v1Diff = pointLineDiff(vert1, dc, cObj->pos);
+        v2Diff = pointLineDiff(vert2, dc, cObj->pos);
+        v1DiffDistSq = vecDistSquared(v1Diff);
+        v2DiffDistSq = vecDistSquared(v2Diff);
 
-        // Circle collides with the endpoint of the rectangle side
-        // TODO - resolve collision in this scenario
+        if (MIN(v1DiffDistSq, v2DiffDistSq) >= powf(cObj_C->radius, 2.0f)) return NO_CLSN;
+
+        if (v1DiffDistSq < v2DiffDistSq)
+        {
+            float backDist = sqrt(powf(cObj_C->radius, 2.0f) - v1DiffDistSq);
+            printf("%f\n", backDist);
+            velClsnPos = vecSub(vecAdd(vert1, v1Diff), vecScale(vecNormalize(dc), backDist));
+            cDiff = vecSub(cObj->pos, vert1);
+        }
+        else
+        {
+            float backDist = sqrt(powf(cObj_C->radius, 2.0f) - v2DiffDistSq);
+            printf("%f\n", backDist);
+            velClsnPos = vecSub(vecAdd(vert2, v2Diff), vecScale(vecNormalize(dc), backDist));
+            cDiff = vecSub(cObj->pos, vert2);
+        }
+
+        printf("%f\n", prop = vecDist(vecSub(velClsnPos, cObj->pos)) / vecDist(dc));
+
+        return (Collision)
+        {
+            .prop = vecDist(vecSub(velClsnPos, cObj->pos)) / vecDist(dc),
+            .outVel = vecReflect(cObj->vel, vecScale(cDiff, 1.0f / cObj_C->radius))
+        };
     }
 
     return (Collision)

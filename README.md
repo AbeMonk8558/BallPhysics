@@ -25,7 +25,7 @@ detail because its tedious as a MF, but the steps will be outlined below along w
 
 <!-- end of the list -->
 
-Here's a [Desmos graph](https://www.desmos.com/calculator/wm97f5py1e) I created to prove that the discussed method works. Under the folder `Proportion Solve`, you can find the quadratic setup and solution. The code for this is in the source under `collision.c`.
+Here's a [Desmos graph](https://www.desmos.com/calculator/z7smyex87v) I created to prove that the discussed method works. Under the folder `Proportion Solve`, you can find the quadratic setup and solution. The code for this is in the source under `collision.c`.
 
 ### Godly links
 

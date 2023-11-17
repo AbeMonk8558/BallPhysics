@@ -143,6 +143,18 @@ void getRectVertices(Object* rObj, Vector2 vertices[4])
     vertices[3] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ rObj->pos.x, rObj->pos.y + h }, c), rMatrix));
 }
 
+void getRectVerticesVerbose(Vector2 pos, Vector2 size, float rotation, Vector2 vertices[4])
+{
+    float w = size.x, h = size.y;
+    Vector2 c = vecAdd(pos, (Vector2){ size.x * 0.5f, size.y * 0.5f });
+    Matrix2x2 rMatrix = rotationMatrix(rotation);
+
+    vertices[0] = vecAdd(c, matrixVecMultiply(vecSub(pos, c), rMatrix));
+    vertices[1] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ pos.x + w, pos.y }, c), rMatrix));
+    vertices[2] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ pos.x + w, pos.y + h }, c), rMatrix));
+    vertices[3] = vecAdd(c, matrixVecMultiply(vecSub((Vector2){ pos.x, pos.y + h }, c), rMatrix));
+}
+
 // Uses Cramer's rule
 Vector2 calcIntersection(Vector2 pos1, Vector2 vel1, Vector2 pos2, Vector2 vel2)
 {
