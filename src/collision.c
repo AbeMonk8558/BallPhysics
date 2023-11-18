@@ -85,7 +85,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     if (vecDistSquared(pointLineDiff(calcMotion(cObj->pos, dc), slope, vert1)) >= powf(begDist, 2.0f)) return NO_CLSN;
 
     prop = (begDist - cObj_C->radius) / begDist;
-    if (powf(sqrt(clsnDistSq) * prop, 2.0f) >= vecDistSquared(dc)) return NO_CLSN;
+    if (powf(sqrtf(clsnDistSq) * prop, 2.0f) >= vecDistSquared(dc)) return NO_CLSN;
 
     cpp = calcMotionP(cObj->pos, dc, prop);
     clsnPoint = vecAdd(cpp, pointLineDiff(cpp, slope, vert1));
@@ -93,44 +93,43 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     if (clsnPoint.x > MAX(vert1.x, vert2.x) || clsnPoint.x < MIN(vert1.x, vert2.x) ||
         clsnPoint.y > MAX(vert1.y, vert2.y) || clsnPoint.y < MIN(vert1.y, vert2.y))
     {
-        Vector2 v1Diff, v2Diff, velClsnPos, cDiff;
-        float v1DiffDistSq, v2DiffDistSq;
+        // The circle may still collide with a rectangle corner, which we will treat as
+        // a collision with a static circle of radius zero
 
-        v1Diff = pointLineDiff(vert1, dc, cObj->pos);
-        v2Diff = pointLineDiff(vert2, dc, cObj->pos);
-        v1DiffDistSq = vecDistSquared(v1Diff);
-        v2DiffDistSq = vecDistSquared(v2Diff);
+        Vector2 vert;
+        float a, b, c, discriminant;
 
-        if (MIN(v1DiffDistSq, v2DiffDistSq) >= powf(cObj_C->radius, 2.0f)) return NO_CLSN;
-
-        if (v1DiffDistSq < v2DiffDistSq)
-        {
-            float backDist = sqrt(powf(cObj_C->radius, 2.0f) - v1DiffDistSq);
-            printf("%f\n", backDist);
-            velClsnPos = vecSub(vecAdd(vert1, v1Diff), vecScale(vecNormalize(dc), backDist));
-            cDiff = vecSub(cObj->pos, vert1);
-        }
+        if (vecDistSquared(vecSub(vert1, cObj->pos)) < vecDistSquared(vecSub(vert2, cObj->pos)))
+            vert = vert1;
         else
-        {
-            float backDist = sqrt(powf(cObj_C->radius, 2.0f) - v2DiffDistSq);
-            printf("%f\n", backDist);
-            velClsnPos = vecSub(vecAdd(vert2, v2Diff), vecScale(vecNormalize(dc), backDist));
-            cDiff = vecSub(cObj->pos, vert2);
-        }
+            vert = vert2;
 
-        printf("%f\n", prop = vecDist(vecSub(velClsnPos, cObj->pos)) / vecDist(dc));
+        a = powf(dc.x, 2.0f) + powf(dc.y, 2.0f);
 
-        return (Collision)
-        {
-            .prop = vecDist(vecSub(velClsnPos, cObj->pos)) / vecDist(dc),
-            .outVel = vecReflect(cObj->vel, vecScale(cDiff, 1.0f / cObj_C->radius))
-        };
+        b = 2.0f * dc.x * (cObj->pos.x - vert.x) +
+            2.0f * dc.y * (cObj->pos.y - vert.y);
+
+        c = powf(cObj->pos.x, 2.0f) + powf(vert.x, 2.0f) - (2.0f * cObj->pos.x * vert.x) +
+            powf(cObj->pos.y, 2.0f) + powf(vert.y, 2.0f) - (2.0f * cObj->pos.y * vert.y) -
+            powf(cObj_C->radius, 2.0f);
+
+        discriminant = powf(b, 2.0f) - (4.0f * a * c);
+        if (discriminant < 0.0f) return NO_CLSN;
+
+        prop = -(b + sqrtf(discriminant)) / (2.0f * a);
+        if (prop >= 1.0f) return NO_CLSN;
+
+        slope = vecSub(calcMotionP(cObj->pos, dc, prop), vert);
+    }
+    else
+    {
+        slope = (Vector2){ -slope.y, slope.x };
     }
 
     return (Collision)
     {
         .prop = prop,
-        .outVel = vecReflect(cObj->vel, (Vector2){ -slope.y, slope.x })
+        .outVel = vecReflect(cObj->vel, slope)
     };
 }
 
