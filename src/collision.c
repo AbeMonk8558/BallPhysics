@@ -49,7 +49,10 @@ Collision findCollisions(ObjectList objects, int idx)
     return NO_CLSN;
 }
 
-// TODO - Assumes rectangle is stationary; fix
+// TODO - In edge cases, the side detection is inaccurate at long distances. Not consequential when velocity
+// vector is small per frame, but relevant for later use cases.
+
+// Assumes rectangle is stationary, may be updated later
 Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 {
     if (main == OBJ_RECT) return NO_CLSN;
@@ -60,8 +63,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 
     Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
     int i;
-    Vector2 curIntPos, slope, curSlope, vert1, vert2, clsnPoint, cpp;
-    float clsnDistSq = INFINITY, curClsnDistSq, begDist, prop;
+    Vector2 curIntPos, intPos, slope, curSlope, vert1, vert2;
+    float clsnDistSq = INFINITY, curClsnDistSq;
 
     getRectVertices(rObj, vertices);
     Vector2 rCenter = calcCentroid(rObj);
@@ -72,26 +75,31 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
         curSlope = vecSub(vertices[(i + 1) % 4], vertices[i]);
 
         // The circle should be traveling in an opposing direction to the side's surface norm pointing opposite the rect center
-        if (dotProduct((pointLineDiff(rCenter, curSlope, vertices[i])), dc) > 0.0f) continue;
+        if (dotProduct((pointLineDiff(rCenter, curSlope, vertices[i])), dc) > 0.0f ||
+            !isTravelingTowardsLine(cObj->pos, dc, vertices[i], curSlope)) continue;
 
         curIntPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
         curClsnDistSq = vecDistSquared((vecSub(cObj->pos, curIntPos)));
 
         if (curClsnDistSq < clsnDistSq)
-            clsnDistSq = curClsnDistSq, slope = curSlope, vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
+            clsnDistSq = curClsnDistSq, slope = curSlope, vert1 = vertices[i], vert2 = vertices[(i + 1) % 4], 
+            intPos = curIntPos;
     }
+    
+    Vector2 clsnPosOnLn, clsnPosOnVel, begProj;
+    float clsnDistFromInt, prop;
 
-    begDist = vecDist(pointLineDiff(cObj->pos, slope, vert1));
-    if (vecDistSquared(pointLineDiff(calcMotion(cObj->pos, dc), slope, vert1)) >= powf(begDist, 2.0f)) return NO_CLSN;
+    // Uses similar triangles to calculate exact collision position
 
-    prop = (begDist - cObj_C->radius) / begDist;
-    if (powf(sqrtf(clsnDistSq) * prop, 2.0f) >= vecDistSquared(dc)) return NO_CLSN;
+    begProj = vecAdd(cObj->pos, pointLineDiff(cObj->pos, slope, vert1));
+    clsnDistFromInt = cObj_C->radius * 
+                      (vecDist(vecSub(cObj->pos, intPos)) / vecDist(vecSub(cObj->pos, begProj)));
 
-    cpp = calcMotionP(cObj->pos, dc, prop);
-    clsnPoint = vecAdd(cpp, pointLineDiff(cpp, slope, vert1));
+    clsnPosOnVel = vecSub(intPos, vecScale(vecNormalize(dc), clsnDistFromInt));
+    clsnPosOnLn = vecAdd(clsnPosOnVel, pointLineDiff(clsnPosOnVel, slope, vert1));
 
-    if (clsnPoint.x > MAX(vert1.x, vert2.x) || clsnPoint.x < MIN(vert1.x, vert2.x) ||
-        clsnPoint.y > MAX(vert1.y, vert2.y) || clsnPoint.y < MIN(vert1.y, vert2.y))
+    if (clsnPosOnLn.x > MAX(vert1.x, vert2.x) || clsnPosOnLn.x < MIN(vert1.x, vert2.x) ||
+        clsnPosOnLn.y > MAX(vert1.y, vert2.y) || clsnPosOnLn.y < MIN(vert1.y, vert2.y))
     {
         // The circle may still collide with a rectangle corner, which we will treat as
         // a collision with a static circle of radius zero
@@ -99,10 +107,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
         Vector2 vert;
         float a, b, c, discriminant;
 
-        if (vecDistSquared(vecSub(vert1, cObj->pos)) < vecDistSquared(vecSub(vert2, cObj->pos)))
-            vert = vert1;
-        else
-            vert = vert2;
+        vert = vecDistSquared(vecSub(vert1, cObj->pos)) < vecDistSquared(vecSub(vert2, cObj->pos)) 
+            ? vert1 : vert2;
 
         a = powf(dc.x, 2.0f) + powf(dc.y, 2.0f);
 
@@ -113,7 +119,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
             powf(cObj->pos.y, 2.0f) + powf(vert.y, 2.0f) - (2.0f * cObj->pos.y * vert.y) -
             powf(cObj_C->radius, 2.0f);
 
-        discriminant = powf(b, 2.0f) - (4.0f * a * c);
+        discriminant = powf(b, 2.0f) - (4.0f * a * c); 
         if (discriminant < 0.0f) return NO_CLSN;
 
         prop = -(b + sqrtf(discriminant)) / (2.0f * a);
@@ -123,6 +129,9 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     }
     else
     {
+        prop = vecDist(vecSub(cObj->pos, clsnPosOnVel)) / vecDist(dc);
+        if (prop < 0.0f || prop >= 1.0f) return NO_CLSN;
+
         slope = (Vector2){ -slope.y, slope.x };
     }
 
@@ -133,7 +142,6 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     };
 }
 
-// Assumes balls have same radius -- edit later
 Collision circleAndCircleCollision(Object* obj1, Object* obj2)
 {
     CircleObject *obj1_C = (CircleObject*)obj1->typeObj, *obj2_C = (CircleObject*)obj2->typeObj;

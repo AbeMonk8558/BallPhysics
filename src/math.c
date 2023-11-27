@@ -64,7 +64,7 @@ Vector2 vecReflect(Vector2 vel, Vector2 surfaceNorm)
     return vecSub(vel, vecScale(proj, 2.0f));
 }
 
-// Gets the vector difference from a point to the closest point on a line (pointing towards the line).s
+// Gets the vector difference from a point to the closest point on a line (pointing towards the line).
 Vector2 pointLineDiff(Vector2 point, Vector2 lineSlope, Vector2 linePos)
 {
     // Derives from the relationship linePos + (lambda)lineSlope = linePoint solved
