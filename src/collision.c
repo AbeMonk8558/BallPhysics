@@ -17,16 +17,23 @@ Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp)
     return vecAdd(vecScale(vel1, collisionProp), vecScale(vel2, (1.0f - collisionProp)));
 }
 
-bool isCollision(Collision clsn)
+bool isFrameCollision(Collision* clsn)
 {
-    return clsn.prop >= 0.0f;
+    return clsn->prop >= 0.0f && clsn->prop < 1.0f;
+}
+
+bool isCollision(Collision* clsn)
+{
+    return clsn->prop >= 0.0f;
 }
 
 Collision findCollisions(ObjectList objects, int idx)
 {
     int i;
     Object* obj = &objects.data[idx];
-    Collision clsn;
+    Collision closestClsn = NO_CLSN, curClsn;
+
+    if (obj->vel.x == 0.0f && obj->vel.y == 0.0f) return NO_CLSN;
 
     for (i = 0; i < objects.size; i++)
     {
@@ -35,18 +42,17 @@ Collision findCollisions(ObjectList objects, int idx)
         Object* obj2 = &objects.data[i];
 
         if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_RECT)
-            clsn = circleAndRectCollision(obj, obj2, obj->type);
+            curClsn = circleAndRectCollision(obj, obj2, obj->type);
         else if (obj->type == OBJ_RECT && obj2->type == OBJ_CIRCLE)
-            clsn = circleAndRectCollision(obj2, obj, obj->type);
+            curClsn = circleAndRectCollision(obj2, obj, obj->type);
         else if (obj->type == OBJ_CIRCLE && obj2->type == OBJ_CIRCLE)
-            clsn = circleAndCircleCollision(obj, obj2);
+            curClsn = circleAndCircleCollision(obj, obj2);
 
-        if (clsn.prop < 0.0f) continue;
-
-        return clsn;
+        if (!isCollision(&closestClsn) || (isCollision(&curClsn) && curClsn.prop < closestClsn.prop))
+            closestClsn = curClsn;
     }
 
-    return NO_CLSN;
+    return closestClsn;
 }
 
 // TODO - In edge cases, the side detection is inaccurate at long distances. Not consequential when velocity
@@ -55,8 +61,6 @@ Collision findCollisions(ObjectList objects, int idx)
 // Assumes rectangle is stationary, may be updated later
 Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 {
-    if (main == OBJ_RECT) return NO_CLSN;
-
     CircleObject* cObj_C = (CircleObject*)cObj->typeObj;
     RectObject* rObj_R = (RectObject*)rObj->typeObj;
     Vector2 dc = getFrameVel(cObj->vel), dr = getFrameVel(rObj->vel);
@@ -123,14 +127,14 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
         if (discriminant < 0.0f) return NO_CLSN;
 
         prop = -(b + sqrtf(discriminant)) / (2.0f * a);
-        if (prop >= 1.0f) return NO_CLSN;
+        //if (prop >= 1.0f) return NO_CLSN;
 
         slope = vecSub(calcMotionP(cObj->pos, dc, prop), vert);
     }
     else
     {
         prop = vecDist(vecSub(cObj->pos, clsnPosOnVel)) / vecDist(dc);
-        if (prop < 0.0f || prop >= 1.0f) return NO_CLSN;
+        if (prop < 0.0f /*|| prop >= 1.0f*/) return NO_CLSN;
 
         slope = (Vector2){ -slope.y, slope.x };
     }
@@ -138,7 +142,7 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     return (Collision)
     {
         .prop = prop,
-        .outVel = vecReflect(cObj->vel, slope)
+        .outVel = prop >= 1.0f ? VEC2_ZERO : vecReflect(cObj->vel, slope)
     };
 }
 
@@ -168,25 +172,26 @@ Collision circleAndCircleCollision(Object* obj1, Object* obj2)
         powf(r1 + r2, 2.0f);
 
     discriminant = powf(b, 2.0f) - (4.0f * a * c);
-
     if (discriminant < 0.0f) return NO_CLSN;
 
     prop = -(b + sqrtf(discriminant)) / (2.0f * a);
+    //if (prop >= 1.0f) return NO_CLSN;
 
-    if (prop >= 1.0f) return NO_CLSN;
+    if (prop < 1.0f)
+    {
+        // Determining the collision angle
 
-    // Determining the collision angle
+        pp1 = calcMotionP(p1, d1, prop);
+        pp2 = calcMotionP(p2, d2, prop);
 
-    pp1 = calcMotionP(p1, d1, prop);
-    pp2 = calcMotionP(p2, d2, prop);
-
-    n = vecScale(vecSub(pp2, pp1), 1.0f / (r1 + r2));
-    p = dotProduct(n, vecSub(obj1->vel, obj2->vel));
+        n = vecScale(vecSub(pp2, pp1), 1.0f / (r1 + r2));
+        p = dotProduct(n, vecSub(obj1->vel, obj2->vel));
+    }
 
     return (Collision)
     { 
         .prop = prop,
-        .outVel = vecSub(obj1->vel, vecScale(n, p))
+        .outVel = prop >= 1.0f ? VEC2_ZERO : vecSub(obj1->vel, vecScale(n, p))
     };
 }
 

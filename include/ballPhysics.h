@@ -98,9 +98,8 @@ void addRectObject(Vector2 pos, Vector2 vel, Vector2 size, float rotation);
 
 //common.c
 bool floatEquals(float left, float right);
-bool looseFloatGt(float left, float right);
-bool looseFloatLt(float left, float right);
 Color randomColor(RandColorScope scope);
+void DrawArrowV(Vector2 start, Vector2 end, float tipAngle, float tipLength, Color color);
 
 //generation.c
 void genTrajectories(ObjectList objects);
@@ -114,7 +113,8 @@ void handleLineCreation(Vector2 mousePos);
 //collision.c
 Collision findCollisions(ObjectList objects, int idx);
 Vector2 calcCollisionVec(Vector2 vel1, Vector2 vel2, float collisionProp);
-bool isCollision(Collision clsn);
+bool isFrameCollision(Collision* clsn);
+bool isCollision(Collision* clsn);
 
 //math.c
 Vector2 vecAdd(Vector2 left, Vector2 right);
@@ -124,6 +124,7 @@ float vecDist(Vector2 vec);
 float vecDistSquared(Vector2 vec);
 Vector2 vecInverse(Vector2 vec);
 float dotProduct(Vector2 left, Vector2 right);
+float crossProduct(Vector2 left, Vector2 right);
 Vector2 vecNormalize(Vector2 vec);
 Vector2 vecProj(Vector2 surface, Vector2 vec);
 Vector2 vecReflect(Vector2 vel, Vector2 surfaceNorm);

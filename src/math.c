@@ -45,6 +45,12 @@ float dotProduct(Vector2 left, Vector2 right)
     return left.x * right.x + left.y * right.y;
 }
 
+// Equivalent to the determinant (signed area of parallelogram between two vectors)
+float crossProduct(Vector2 left, Vector2 right)
+{
+    return left.x * right.y - left.y * right.x;
+}
+
 Vector2 vecNormalize(Vector2 vec)
 {
     float dist = vecDist(vec);

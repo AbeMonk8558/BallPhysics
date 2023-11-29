@@ -33,7 +33,8 @@ int main(int argc, char** argv)
     Color backgroundColor = BLACK;
     KeyboardKey key;
     Vector2 mousePos;
-    int i;
+    int i, frameCtr = 1;
+    char frameCtrBuf[8];
 
     SetTraceLogLevel(LOG_LEVEL);
 
@@ -78,6 +79,9 @@ int main(int argc, char** argv)
         }
 
         BeginDrawing();
+
+        sprintf(frameCtrBuf, "%d", frameCtr++);
+        DrawText(frameCtrBuf, 50, 50, 5, RED);
 
         ClearBackground(backgroundColor);
         renderObjects();
@@ -150,7 +154,7 @@ void updateObjectStates(void)
         obj = &objects.data[i];
         clsn = &collisions[i];
 
-        if (isCollision(*clsn))
+        if (isFrameCollision(clsn))
         {
             d = getFrameVel(calcCollisionVec(obj->vel, clsn->outVel, clsn->prop));
             obj->vel = clsn->outVel;
@@ -170,10 +174,13 @@ void renderObjects(void)
 {
     int i;
     Object* obj;
+    Collision* clsn;
+    Vector2 centroid;
 
     for (i = 0; i < objects.size; i++)
     {
         obj = &objects.data[i];
+        clsn = &collisions[i];
 
         if (obj->type == OBJ_CIRCLE)
         {
@@ -199,6 +206,16 @@ void renderObjects(void)
                 VEC2_ZERO,
                 getRenderRotation(r),
                 WHITE);
+        }
+
+        // Draw collision arrow
+
+        if (isCollision(clsn))
+        {
+            centroid = calcCentroid(obj);
+            DrawArrowV(centroid, 
+                calcMotionP(obj->pos, getFrameVel(obj->vel), clsn->prop), 
+                PI / 4, 10.0f, GREEN);
         }
     }
 }
