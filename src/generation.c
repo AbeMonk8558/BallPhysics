@@ -15,6 +15,7 @@ void genTrajectories(ObjectList objects)
 #else
         if (i == 0) objects.data[i].vel = (Vector2){ -10, 0 };
         else if (i == 1) objects.data[i].vel = (Vector2){ -10 * cosf(PI/4), -10 * sinf(PI/4) };
+        else if (i == 2) objects.data[i].vel = (Vector2){ 10 * cosf(PI/3), 10 * sinf(PI/3) };
 #endif
     }
 }
@@ -32,6 +33,7 @@ void genLocations(ObjectList objects)
 #else
         if (i == 0) objects.data[i].pos = (Vector2){ 200, 50 };
         else if (i == 1) objects.data[i].pos = (Vector2){ 80 + 150 * cosf(PI/4), 50 + 150 * sinf(PI/4) };
+        else if (i == 2) objects.data[i].pos = (Vector2){ 250, 250 };
 #endif
     }
 }

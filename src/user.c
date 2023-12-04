@@ -3,12 +3,11 @@
 #include <math.h>
 #include "ballPhysics.h"
 
-#include <stdio.h>
-
-// void configureUI(void)
-// {
-    
-// }
+void configureUI(void)
+{
+    GuiEnable();
+    GuiCheckBox((Rectangle){ 50, 50, 50, 50 }, "Test", false);
+}
 
 void handleSpeedMod(float* speedMod, KeyboardKey key)
 {

@@ -106,6 +106,8 @@ void genTrajectories(ObjectList objects);
 void genLocations(ObjectList objects);
 
 //user.c
+void configureUI(void);
+
 void handleSpeedMod(float* speedMod, KeyboardKey key);
 void handlePause(bool* paused, KeyboardKey key);
 void handleLineCreation(Vector2 mousePos);

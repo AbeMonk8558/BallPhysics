@@ -55,9 +55,6 @@ Collision findCollisions(ObjectList objects, int idx)
     return closestClsn;
 }
 
-// TODO - In edge cases, the side detection is inaccurate at long distances. Not consequential when velocity
-// vector is small per frame, but relevant for later use cases.
-
 // Assumes rectangle is stationary, may be updated later
 Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 {
@@ -67,8 +64,8 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
 
     Vector2 vertices[4]; // [bttm-left, bttm-right, top-right, top-left]
     int i;
-    Vector2 curIntPos, intPos, slope, curSlope, vert1, vert2;
-    float clsnDistSq = INFINITY, curClsnDistSq;
+    Vector2 intPos, slope, vert1, vert2;
+    float clsnDistSq;
 
     getRectVertices(rObj, vertices);
     Vector2 rCenter = calcCentroid(rObj);
@@ -76,74 +73,69 @@ Collision circleAndRectCollision(Object* cObj, Object* rObj, ObjectType main)
     // Determines which side of the rectangle the circle will collide with
     for (i = 0; i < 4; i++)
     {
-        curSlope = vecSub(vertices[(i + 1) % 4], vertices[i]);
+        vert1 = vertices[i], vert2 = vertices[(i + 1) % 4];
+        slope = vecSub(vert2, vert1);
 
         // The circle should be traveling in an opposing direction to the side's surface norm pointing opposite the rect center
-        if (dotProduct((pointLineDiff(rCenter, curSlope, vertices[i])), dc) > 0.0f ||
-            !isTravelingTowardsLine(cObj->pos, dc, vertices[i], curSlope)) continue;
+        if (dotProduct((pointLineDiff(rCenter, slope, vert1)), dc) > 0.0f ||
+            !isTravelingTowardsLine(cObj->pos, dc, vert1, slope)) continue;
 
-        curIntPos = calcIntersection(cObj->pos, dc, vertices[i], curSlope);
-        curClsnDistSq = vecDistSquared((vecSub(cObj->pos, curIntPos)));
+        intPos = calcIntersection(cObj->pos, dc, vert1, slope);
+        clsnDistSq = vecDistSquared((vecSub(cObj->pos, intPos)));
 
-        if (curClsnDistSq < clsnDistSq)
-            clsnDistSq = curClsnDistSq, slope = curSlope, vert1 = vertices[i], vert2 = vertices[(i + 1) % 4], 
-            intPos = curIntPos;
-    }
-    
-    Vector2 clsnPosOnLn, clsnPosOnVel, begProj;
-    float clsnDistFromInt, prop;
+        Vector2 clsnPosOnLn, clsnPosOnVel, begProj;
+        float clsnDistFromInt, prop;
 
-    // Uses similar triangles to calculate exact collision position
+        // ******** Uses similar triangles to calculate exact collision position *********
+        begProj = vecAdd(cObj->pos, pointLineDiff(cObj->pos, slope, vert1));
+        clsnDistFromInt = cObj_C->radius * 
+                        (vecDist(vecSub(cObj->pos, intPos)) / vecDist(vecSub(cObj->pos, begProj)));
 
-    begProj = vecAdd(cObj->pos, pointLineDiff(cObj->pos, slope, vert1));
-    clsnDistFromInt = cObj_C->radius * 
-                      (vecDist(vecSub(cObj->pos, intPos)) / vecDist(vecSub(cObj->pos, begProj)));
+        clsnPosOnVel = vecSub(intPos, vecScale(vecNormalize(dc), clsnDistFromInt));
+        clsnPosOnLn = vecAdd(clsnPosOnVel, pointLineDiff(clsnPosOnVel, slope, vert1));
+        // *******************************************************************************
 
-    clsnPosOnVel = vecSub(intPos, vecScale(vecNormalize(dc), clsnDistFromInt));
-    clsnPosOnLn = vecAdd(clsnPosOnVel, pointLineDiff(clsnPosOnVel, slope, vert1));
+        if (clsnPosOnLn.x > MAX(vert1.x, vert2.x) || clsnPosOnLn.x < MIN(vert1.x, vert2.x) ||
+            clsnPosOnLn.y > MAX(vert1.y, vert2.y) || clsnPosOnLn.y < MIN(vert1.y, vert2.y))
+        {
+            // The circle may still collide with a rectangle corner, which we will treat as
+            // a collision with a static circle of radius zero
 
-    if (clsnPosOnLn.x > MAX(vert1.x, vert2.x) || clsnPosOnLn.x < MIN(vert1.x, vert2.x) ||
-        clsnPosOnLn.y > MAX(vert1.y, vert2.y) || clsnPosOnLn.y < MIN(vert1.y, vert2.y))
-    {
-        // The circle may still collide with a rectangle corner, which we will treat as
-        // a collision with a static circle of radius zero
+            Vector2 vert;
+            float a, b, c, discriminant;
 
-        Vector2 vert;
-        float a, b, c, discriminant;
+            vert = vecDistSquared(vecSub(vert1, cObj->pos)) < vecDistSquared(vecSub(vert2, cObj->pos)) ?
+                vert1 : vert2;
 
-        vert = vecDistSquared(vecSub(vert1, cObj->pos)) < vecDistSquared(vecSub(vert2, cObj->pos)) 
-            ? vert1 : vert2;
+            a = powf(dc.x, 2.0f) + powf(dc.y, 2.0f);
 
-        a = powf(dc.x, 2.0f) + powf(dc.y, 2.0f);
+            b = 2.0f * dc.x * (cObj->pos.x - vert.x) +
+                2.0f * dc.y * (cObj->pos.y - vert.y);
 
-        b = 2.0f * dc.x * (cObj->pos.x - vert.x) +
-            2.0f * dc.y * (cObj->pos.y - vert.y);
+            c = powf(cObj->pos.x, 2.0f) + powf(vert.x, 2.0f) - (2.0f * cObj->pos.x * vert.x) +
+                powf(cObj->pos.y, 2.0f) + powf(vert.y, 2.0f) - (2.0f * cObj->pos.y * vert.y) -
+                powf(cObj_C->radius, 2.0f);
 
-        c = powf(cObj->pos.x, 2.0f) + powf(vert.x, 2.0f) - (2.0f * cObj->pos.x * vert.x) +
-            powf(cObj->pos.y, 2.0f) + powf(vert.y, 2.0f) - (2.0f * cObj->pos.y * vert.y) -
-            powf(cObj_C->radius, 2.0f);
+            discriminant = powf(b, 2.0f) - (4.0f * a * c); 
+            if (discriminant < 0.0f) continue;
 
-        discriminant = powf(b, 2.0f) - (4.0f * a * c); 
-        if (discriminant < 0.0f) return NO_CLSN;
+            prop = -(b + sqrtf(discriminant)) / (2.0f * a);
+            slope = vecSub(calcMotionP(cObj->pos, dc, prop), vert);
+        }
+        else
+        {
+            prop = vecDist(vecSub(cObj->pos, clsnPosOnVel)) / vecDist(dc);
+            slope = (Vector2){ -slope.y, slope.x };
+        }
 
-        prop = -(b + sqrtf(discriminant)) / (2.0f * a);
-        //if (prop >= 1.0f) return NO_CLSN;
-
-        slope = vecSub(calcMotionP(cObj->pos, dc, prop), vert);
-    }
-    else
-    {
-        prop = vecDist(vecSub(cObj->pos, clsnPosOnVel)) / vecDist(dc);
-        if (prop < 0.0f /*|| prop >= 1.0f*/) return NO_CLSN;
-
-        slope = (Vector2){ -slope.y, slope.x };
+        return (Collision)
+        {
+            .prop = prop,
+            .outVel = prop >= 1.0f ? VEC2_ZERO : vecReflect(cObj->vel, slope)
+        };
     }
 
-    return (Collision)
-    {
-        .prop = prop,
-        .outVel = prop >= 1.0f ? VEC2_ZERO : vecReflect(cObj->vel, slope)
-    };
+    return NO_CLSN;
 }
 
 Collision circleAndCircleCollision(Object* obj1, Object* obj2)

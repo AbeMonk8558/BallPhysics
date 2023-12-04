@@ -24,7 +24,7 @@ void handleObjectsResize(void);
 #else
 int main(int argc, char** argv)
 {
-    nBalls = 2;
+    nBalls = 3;
     speedMod = 1.0f;
     radius = 10;
     targetFPS = DEF_TARGET_FPS;
@@ -60,6 +60,8 @@ int main(int argc, char** argv)
     addRectObject((Vector2){ GetScreenWidth() - 1, 0 }, VEC2_ZERO, (Vector2){ 1, GetScreenHeight() }, 0.0f);
     addRectObject((Vector2){ 0, GetScreenHeight() }, VEC2_ZERO, (Vector2){ GetScreenWidth(), 0 }, 0.0f);
     // ******************************************************************
+
+    configureUI();
 
     while (!WindowShouldClose())
     {
