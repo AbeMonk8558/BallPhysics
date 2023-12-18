@@ -1,5 +1,5 @@
 # BallPhysics
-A highly-customizable 2D ball physics simulation created with Raylib (currently nowhere near completion). Uses continuous collision detection for hyper-accurate collisions.
+A simple 2D ball physics simulation with limited capabilities. Uses continuous collision detection to predict where collisions will occur ahead of time to absolute precision. The simulation implements dynamic circles and static oriented rectangles.
 
 ## Overview
 In the future, the math behind the continuous collision detection will be explained here. The simulation does not currently account for acceleration, though will in the future.
